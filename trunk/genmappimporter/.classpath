@@ -67,5 +67,6 @@
 	<classpathentry kind="lib" path="/Applications/Cytoscape_v2.6.3/lib/violinstrings-1.0.2.jar"/>
 	<classpathentry kind="lib" path="/Applications/Cytoscape_v2.6.3/lib/wizard.jar"/>
 	<classpathentry kind="lib" path="/Applications/Cytoscape_v2.6.3/cytoscape.jar"/>
+	<classpathentry kind="lib" path="classes"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
