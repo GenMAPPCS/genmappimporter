@@ -71,15 +71,12 @@ public class GenMAPPImportPlugin extends CytoscapePlugin {
 	 *
 	 */
 	public GenMAPPImportPlugin() {
-		System.out.println("loaded import!");
-		final CyMenus cyMenus = Cytoscape.getDesktop().getCyMenus();
 		
 		// Register each menu item
-		cyMenus.addAction(impAttTableAction, 5);
+		Cytoscape.getDesktop().getCyMenus().addAction(impAttTableAction, 5);
 		
 		// register cycommands
 		try {
-			System.out.println("registering import!");
 			// You must reserve your namespace first
 			CyCommandNamespace ns = CyCommandManager
 					.reserveNamespace("genmapp import");
