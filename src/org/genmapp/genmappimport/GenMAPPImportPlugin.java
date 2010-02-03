@@ -36,11 +36,21 @@
 
 package org.genmapp.genmappimport;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
-import org.genmapp.genmappimport.actions.ImportNetworkTableAction;
 
 import cytoscape.Cytoscape;
+import cytoscape.command.AbstractCommandHandler;
+import cytoscape.command.CyCommandException;
+import cytoscape.command.CyCommandHandler;
+import cytoscape.command.CyCommandManager;
+import cytoscape.command.CyCommandNamespace;
+import cytoscape.command.CyCommandResult;
+import cytoscape.layout.Tunable;
 import cytoscape.plugin.CytoscapePlugin;
+import cytoscape.util.CytoscapeAction;
 import cytoscape.view.CyMenus;
 
 
@@ -53,15 +63,56 @@ import cytoscape.view.CyMenus;
  *
  */
 public class GenMAPPImportPlugin extends CytoscapePlugin {
+	
+	protected CytoscapeAction impAttTableAction = new ImportAttributeTableAction();
+	
 	/**
 	 * Constructor for this plugin.
 	 *
 	 */
 	public GenMAPPImportPlugin() {
-		
+		System.out.println("loaded import!");
 		final CyMenus cyMenus = Cytoscape.getDesktop().getCyMenus();
 		
 		// Register each menu item
-		cyMenus.addAction(new ImportAttributeTableAction(), 5);
+		cyMenus.addAction(impAttTableAction, 5);
+		
+		// register cycommands
+		try {
+			System.out.println("registering import!");
+			// You must reserve your namespace first
+			CyCommandNamespace ns = CyCommandManager
+					.reserveNamespace("genmapp import");
+			// Now register this handler as handling "open"
+			CyCommandHandler oh = new OpenCommandHandler(ns);
+		} catch (RuntimeException e) {
+			// Handle already registered exceptions
+			System.out.println(e);
+		}
+
+	}
+	
+	class OpenCommandHandler extends AbstractCommandHandler {
+		protected OpenCommandHandler(CyCommandNamespace ns) {
+			super(ns);
+			addArgument("open");
+		}
+
+		public String getHandlerName() {
+			return "open";
+		}
+
+		public CyCommandResult execute(String command, Map<String, Object> args)
+				throws CyCommandException {
+			impAttTableAction.actionPerformed(null);
+			return new CyCommandResult();
+		}
+
+		public CyCommandResult execute(String arg0, Collection<Tunable> arg1)
+				throws CyCommandException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
 	}
 }

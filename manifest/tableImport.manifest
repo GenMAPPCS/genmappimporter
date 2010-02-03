@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Ant-Version: Apache Ant 1.6.2
 Created-By: 1.4.2-54 ("Apple Computer, Inc.")
-Main-Class: org.genmapp.tableImport.GenMAPPImportPlugin
+Main-Class: org.genmapp.genmappimport.GenMAPPImportPlugin
 Class-Path: .
-Cytoscape-Plugin: org.genmapp.tableImport.GenMAPPImportPlugin
+Cytoscape-Plugin: org.genmapp.genmappimport.GenMAPPImportPlugin
