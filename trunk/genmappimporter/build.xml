@@ -123,18 +123,16 @@
 		<unjar dest="${tableImport.classes.dir}">
 			<fileset dir="${tableImport.lib.dir}">
 				<include name="*.jar" />
-
-				<exclude name="GenMAPPImport.jar" />
-				<exclude name="TableImportTest.jar" />
 			</fileset>
 		</unjar>
+	
 		<jar destfile="GenMAPPImport.jar" manifest="${tableImport.manifest.dir}/tableImport.manifest">
 			<fileset dir="${tableImport.classes.dir}" includes="**" />
-			<fileset dir="${tableImport.root.dir}/lib" includes="resources/**" />
+			<fileset dir="${tableImport.root.dir}/lib" includes="resources/**" /> 
 		</jar>
 		
   		<copy file="GenMAPPImport.jar" todir="${cytoscape.plugin.dir}"/>
-		<copy file="GenMAPPImport.jar" todir="/Applications/Cytoscape_v2.6.2/plugins"/>
+		<copy file="GenMAPPImport.jar" todir="/Applications/Cytoscape_v2.6.3/plugins"/>
 
 	</target>
 
