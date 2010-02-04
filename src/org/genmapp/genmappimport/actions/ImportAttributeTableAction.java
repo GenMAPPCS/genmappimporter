@@ -77,7 +77,7 @@ public class ImportAttributeTableAction extends CytoscapeAction {
 		ImportTextTableDialog iad;
 
 		try {
-			iad = new ImportTextTableDialog(Cytoscape.getDesktop(), true,
+			iad = new ImportTextTableDialog(Cytoscape.getDesktop(), false,
 			                                ImportTextTableDialog.SIMPLE_ATTRIBUTE_IMPORT);
 			iad.pack();
 			iad.setLocationRelativeTo(Cytoscape.getDesktop());
