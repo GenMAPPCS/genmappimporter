@@ -90,7 +90,6 @@ public class ImportAttributeTableTask implements Task {
 		Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
 		
 		informUserOfAnnotationStats();
-		
 	}
 
 	/**
