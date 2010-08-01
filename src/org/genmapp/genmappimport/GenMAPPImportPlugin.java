@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.genmapp.genmappimport;
 
@@ -51,30 +50,27 @@ import cytoscape.command.CyCommandResult;
 import cytoscape.layout.Tunable;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.util.CytoscapeAction;
-import cytoscape.view.CyMenus;
-
 
 /**
  * Main class for GenMAPP Import plugin.
- *
- * @version 0.1
- * @since Cytoscape 2.6
- * @author Keiichiro Ono, Alex Pico, Allan Kuchinsky, Kristina Hanspers, Scooter Morris
- *
+ * 
+ * @author Keiichiro Ono, Alex Pico, Allan Kuchinsky, Kristina Hanspers, Scooter
+ *         Morris
+ * 
  */
 public class GenMAPPImportPlugin extends CytoscapePlugin {
-	
+
 	protected CytoscapeAction impAttTableAction = new ImportAttributeTableAction();
-	
+
 	/**
 	 * Constructor for this plugin.
-	 *
+	 * 
 	 */
 	public GenMAPPImportPlugin() {
-		
+
 		// Register each menu item
 		Cytoscape.getDesktop().getCyMenus().addAction(impAttTableAction, 5);
-		
+
 		// register cycommands
 		try {
 			// You must reserve your namespace first
@@ -88,7 +84,13 @@ public class GenMAPPImportPlugin extends CytoscapePlugin {
 		}
 
 	}
-	
+
+	/**
+	 * CyCommandHandler registration/execution
+	 * 
+	 * @author apico
+	 * 
+	 */
 	class OpenCommandHandler extends AbstractCommandHandler {
 		protected OpenCommandHandler(CyCommandNamespace ns) {
 			super(ns);
