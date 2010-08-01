@@ -85,6 +85,10 @@ public class AttributeLineParser {
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
 		final int partsLen = parts.length;
 
+		//Create new nodes when necessary
+		Cytoscape.getCyNode(primaryKey, true);
+
+		//map attributes
 		for (int i = 0; i < partsLen; i++) {
 			if ((i != amp.getKeyIndex()) && !amp.getAliasIndexList().contains(i)
 			    && amp.getImportFlag()[i]) {
