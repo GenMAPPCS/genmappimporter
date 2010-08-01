@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,32 +31,22 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.genmapp.genmappimport.actions;
 
 import cytoscape.Cytoscape;
-
 import cytoscape.util.CytoscapeAction;
-
-
 import java.awt.event.ActionEvent;
-
 import java.io.IOException;
-
 import javax.xml.bind.JAXBException;
-
 import org.genmapp.genmappimport.ui.ImportTextTableDialog;
 
-
 /**
- * Display dialog for importing attribute text/Excel file.<br>
- *
- * @since Cytoscape 2.4
- * @version 1.0
- * @author kono
- *
+ * Display dialog for importing data as networks from text/Excel files.<br>
+ * 
  */
+@SuppressWarnings("serial")
 public class ImportAttributeTableAction extends CytoscapeAction {
 	/**
 	 * Creates a new ImportAttributeTableAction object.
@@ -67,10 +56,12 @@ public class ImportAttributeTableAction extends CytoscapeAction {
 		setPreferredMenu("File.Import");
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * cytoscape.util.CytoscapeAction#actionPerformed(java.awt.event.ActionEvent
+	 * )
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -78,7 +69,7 @@ public class ImportAttributeTableAction extends CytoscapeAction {
 
 		try {
 			iad = new ImportTextTableDialog(Cytoscape.getDesktop(), true,
-			                                ImportTextTableDialog.SIMPLE_ATTRIBUTE_IMPORT);
+					ImportTextTableDialog.SIMPLE_ATTRIBUTE_IMPORT);
 			iad.pack();
 			iad.setLocationRelativeTo(Cytoscape.getDesktop());
 			iad.setVisible(true);
