@@ -36,14 +36,14 @@
 
 package org.genmapp.genmappimport.ui;
 
+import java.io.File;
+
+import org.genmapp.genmappimport.reader.TextTableReader;
+
 import cytoscape.Cytoscape;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
-
-
-import java.io.IOException;
-
-import org.genmapp.genmappimport.reader.TextTableReader;
+import cytoscape.util.CyNetworkNaming;
 
 
 /**
@@ -78,11 +78,19 @@ public class ImportAttributeTableTask implements Task {
 			reader.readTable();
 			taskMonitor.setPercentCompleted(100);
 			Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED,null,null);
-			informUserOfAnnotationStats();
 		} catch (Exception e) {
 			e.printStackTrace();
 			taskMonitor.setException(e, "Unable to import annotation data.");
 		}
+		//Create network from all loaded nodes and edges
+		File tempFile = new File(source);
+		String t = tempFile.getName();
+		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+		Cytoscape.createNetwork(Cytoscape.getRootGraph().getNodeIndicesArray(), Cytoscape.getRootGraph().getEdgeIndicesArray(), title);
+		Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
+		
+		informUserOfAnnotationStats();
+		
 	}
 
 	/**
@@ -92,7 +100,7 @@ public class ImportAttributeTableTask implements Task {
 		StringBuffer sb = new StringBuffer();
 
 		// Give the user some confirmation
-		sb.append("Succesfully loaded attribute data from:\n\n");
+		sb.append("Succesfully loaded network and data from:\n\n");
 		sb.append(source + "\n\n");
 
 		sb.append(reader.getReport());
