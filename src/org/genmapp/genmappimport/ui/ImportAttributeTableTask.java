@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.genmapp.genmappimport.ui;
 
@@ -45,7 +44,6 @@ import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.util.CyNetworkNaming;
 
-
 /**
  *
  */
@@ -56,7 +54,7 @@ public class ImportAttributeTableTask implements Task {
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param file
 	 *            File.
 	 * @param fileType
@@ -77,18 +75,19 @@ public class ImportAttributeTableTask implements Task {
 		try {
 			reader.readTable();
 			taskMonitor.setPercentCompleted(100);
-			Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED,null,null);
+			Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null,
+					null);
 		} catch (Exception e) {
 			e.printStackTrace();
 			taskMonitor.setException(e, "Unable to import data.");
 		}
-		//Create network from all loaded nodes and edges
+		// Create network from all loaded nodes and edges
 		File tempFile = new File(source);
 		String t = tempFile.getName();
 		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
-		Cytoscape.createNetwork(Cytoscape.getRootGraph().getNodeIndicesArray(), Cytoscape.getRootGraph().getEdgeIndicesArray(), title);
+		Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape.getRootGraph().getEdgeIndicesArray(), title);
 		Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
-		
+
 		informUserOfAnnotationStats();
 	}
 
@@ -116,17 +115,18 @@ public class ImportAttributeTableTask implements Task {
 
 	/**
 	 * Sets the Task Monitor.
-	 *
+	 * 
 	 * @param taskMonitor
 	 *            TaskMonitor Object.
 	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) throws IllegalThreadStateException {
+	public void setTaskMonitor(TaskMonitor taskMonitor)
+			throws IllegalThreadStateException {
 		this.taskMonitor = taskMonitor;
 	}
 
 	/**
 	 * Gets the Task Title.
-	 *
+	 * 
 	 * @return Task Title.
 	 */
 	public String getTitle() {

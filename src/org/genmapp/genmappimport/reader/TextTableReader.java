@@ -36,8 +36,9 @@
 
 package org.genmapp.genmappimport.reader;
 
-import java.io.IOException;
+import giny.model.Node;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -62,4 +63,10 @@ public interface TextTableReader {
 	 * @return string
 	 */
 	public String getReport();
+	
+	/**
+	 * Make list of nodes from parser available
+	 * @return
+	 */
+	public int[] getNodeIndexList();
 }

@@ -35,6 +35,8 @@
 
 package org.genmapp.genmappimport.reader;
 
+import giny.model.Node;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,4 +177,14 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		}
 		return sb.toString();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.genmapp.genmappimport.reader.TextTableReader#getNodeList()
+	 */
+	public int[] getNodeIndexList() {
+		return parser.getNodeIndexList();
+	}
+
 }

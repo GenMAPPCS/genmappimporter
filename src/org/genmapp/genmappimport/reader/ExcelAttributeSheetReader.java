@@ -40,6 +40,8 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 
+import giny.model.Node;
+
 import java.io.IOException;
 
 import java.util.List;
@@ -176,5 +178,14 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		}
 
 		return sb.toString();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.genmapp.genmappimport.reader.TextTableReader#getNodeList()
+	 */
+	public int[] getNodeIndexList() {
+		return parser.getNodeIndexList();
 	}
 }
