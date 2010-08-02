@@ -610,11 +610,8 @@ public class PreviewTablePanel extends JPanel {
 		 * If rendrer is null, create default one.
 		 */
 		if (curRenderer == null) {
-			curRenderer = new AttributePreviewTableCellRenderer(0,
-					new ArrayList<Integer>(),
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					null, TextFileDelimiters.PIPE.toString());
+			curRenderer = new AttributePreviewTableCellRenderer(0, null,
+					TextFileDelimiters.PIPE.toString());
 		}
 
 		/*
@@ -766,9 +763,6 @@ public class PreviewTablePanel extends JPanel {
 			}
 
 			TableCellRenderer netRenderer = new AttributePreviewTableCellRenderer(
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					new ArrayList<Integer>(),
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
 					importFlag, TextFileDelimiters.PIPE.toString());
 
@@ -1087,23 +1081,6 @@ public class PreviewTablePanel extends JPanel {
 		}
 
 		return matched;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param column
-	 *            DOCUMENT ME!
-	 * @param flag
-	 *            DOCUMENT ME!
-	 */
-	public void setAliasColumn(int column, boolean flag) {
-		AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) getPreviewTable()
-				.getCellRenderer(0, column);
-		rend.setAliasFlag(column, flag);
-		// rend.setImportFlag(column, !rend.getImportFlag(column));
-		getPreviewTable().getTableHeader().resizeAndRepaint();
-		getPreviewTable().repaint();
 	}
 
 	private final class TableHeaderListener implements MouseListener {

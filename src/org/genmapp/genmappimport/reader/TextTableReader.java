@@ -44,24 +44,22 @@ import java.util.List;
 /**
  * Interface of all text table readers.<br>
  *
- * @since Cytoscape 2.4
- * @version 1.0
- * @author kono
- *
  */
 public interface TextTableReader {
-	public enum ObjectType {
-		NODE,
-		EDGE,
-		NETWORK;
-	}
+
+	/**
+	 * @throws IOException
+	 */
 	public void readTable() throws IOException;
 
+	/**
+	 * @return list of column names
+	 */
 	public List getColumnNames();
 
 	/**
 	 * Report the result of import as a string.
-	 * @return Description of
+	 * @return string
 	 */
 	public String getReport();
 }
