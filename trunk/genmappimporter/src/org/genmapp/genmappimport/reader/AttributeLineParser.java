@@ -34,8 +34,11 @@
  */
 package org.genmapp.genmappimport.reader;
 
+import giny.model.Node;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +52,7 @@ import cytoscape.data.CyAttributes;
 public class AttributeLineParser {
 	private AttributeMappingParameters amp;
 	private Map<String, Object> invalid = new HashMap<String, Object>();
+	private List<Integer> nodeList = new ArrayList<Integer>();
 
 	/**
 	 * Creates a new AttributeLineParser object.
@@ -72,7 +76,8 @@ public class AttributeLineParser {
 		final int partsLen = parts.length;
 
 		// Create new nodes when necessary
-		Cytoscape.getCyNode(primaryKey, true);
+		Node n = Cytoscape.getCyNode(primaryKey, true);
+		buildNodeList(n.getRootGraphIndex());
 
 		// map attributes
 		for (int i = 0; i < partsLen; i++) {
@@ -202,6 +207,28 @@ public class AttributeLineParser {
 
 	protected Map getInvalidMap() {
 		return invalid;
+	}
+
+	/**
+	 * Compile a list of nodes from data file
+	 * 
+	 * @param n
+	 */
+	private void buildNodeList(final int n) {
+		nodeList.add(n);
+	}
+
+	/**
+	 * Get list of nodes
+	 * 
+	 * @return
+	 */
+	public int[] getNodeIndexList() {
+		int[] nodeIndexList = new int[nodeList.size()];
+		for (int i = 0; i < nodeList.size(); i++) {
+			nodeIndexList[i] = nodeList.get(i);
+		}
+		return nodeIndexList;
 	}
 
 	/**
