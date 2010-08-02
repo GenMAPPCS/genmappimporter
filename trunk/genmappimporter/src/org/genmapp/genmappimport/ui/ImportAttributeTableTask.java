@@ -71,7 +71,7 @@ public class ImportAttributeTableTask implements Task {
 	 * Executes Task.
 	 */
 	public void run() {
-		taskMonitor.setStatus("Loading attribute data file...");
+		taskMonitor.setStatus("Loading data...");
 		taskMonitor.setPercentCompleted(-1);
 
 		try {
@@ -80,7 +80,7 @@ public class ImportAttributeTableTask implements Task {
 			Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED,null,null);
 		} catch (Exception e) {
 			e.printStackTrace();
-			taskMonitor.setException(e, "Unable to import annotation data.");
+			taskMonitor.setException(e, "Unable to import data.");
 		}
 		//Create network from all loaded nodes and edges
 		File tempFile = new File(source);
@@ -99,7 +99,7 @@ public class ImportAttributeTableTask implements Task {
 		StringBuffer sb = new StringBuffer();
 
 		// Give the user some confirmation
-		sb.append("Succesfully loaded network and data from:\n\n");
+		sb.append("Succesfully loaded data from:\n\n");
 		sb.append(source + "\n\n");
 
 		sb.append(reader.getReport());
@@ -130,6 +130,6 @@ public class ImportAttributeTableTask implements Task {
 	 * @return Task Title.
 	 */
 	public String getTitle() {
-		return new String("Loading Attributes");
+		return new String("Loading Data");
 	}
 }

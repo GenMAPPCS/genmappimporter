@@ -39,11 +39,7 @@ package org.genmapp.genmappimport.ui.theme;
 import java.awt.Color;
 
 /**
- * Color theme for Import Dialogs.<br>
- *
- * @since Cytoscape 2.4
- * @version 1.0
- * @author kono
+ * Color theme for Import Dialogs.
  *
  */
 public enum ImportDialogColorTheme {

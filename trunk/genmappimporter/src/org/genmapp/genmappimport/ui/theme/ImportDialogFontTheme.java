@@ -37,6 +37,11 @@
 package org.genmapp.genmappimport.ui.theme;
 
 import java.awt.Font;
+
+
+/**
+ *
+ */
 public enum ImportDialogFontTheme {
 	TITLE_FONT(new Font("Sans-serif", Font.BOLD, 18)),
 	SELECTED_COL_FONT(new Font("Sans-serif", Font.BOLD, 14)),
