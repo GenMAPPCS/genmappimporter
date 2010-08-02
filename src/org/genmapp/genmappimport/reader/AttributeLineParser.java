@@ -78,12 +78,9 @@ public class AttributeLineParser {
 
 		// map attributes
 		for (int i = 0; i < partsLen; i++) {
-			if ((i != amp.getKeyIndex())
-					&& amp.getImportFlag()[i]) {
+			if (i != amp.getKeyIndex()) {
 				if (parts[i] == null) {
 					continue;
-				} else if (amp.getObjectType() == ObjectType.NETWORK) {
-					// mapAttribute(targetNetworkID, parts[i].trim(), i);
 				} else {
 					mapAttribute(primaryKey, parts[i].trim(), i);
 				}

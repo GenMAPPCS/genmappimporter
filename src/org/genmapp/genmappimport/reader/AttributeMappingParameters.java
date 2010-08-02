@@ -167,20 +167,12 @@ public class AttributeMappingParameters implements MappingParameter {
 			existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
 			it = Cytoscape.getRootGraph().nodesIterator();
 
-		if ((this.mappingAttribute != null)
-				&& !this.mappingAttribute.equals(ID)) {
-			buildAttribute2IDMap(it);
-		}
+//		if ((this.mappingAttribute != null)
+//				&& !this.mappingAttribute.equals(ID)) {
+//			buildAttribute2IDMap(it);
+//		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public Aliases getAlias() {
-		return existingAliases;
-	}
 
 	/**
 	 * DOCUMENT ME!
@@ -219,15 +211,6 @@ public class AttributeMappingParameters implements MappingParameter {
 		return listAttributeTypes;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public boolean[] getImportFlag() {
-		// TODO Auto-generated method stub
-		return importFlag;
-	}
 
 	/**
 	 * DOCUMENT ME!
@@ -249,14 +232,6 @@ public class AttributeMappingParameters implements MappingParameter {
 		return listDelimiter;
 	}
 
-	/**
-	 * Returns attribute name for mapping.
-	 * 
-	 * @return Key CyAttribute name for mapping.
-	 */
-	public String getMappingAttribute() {
-		return mappingAttribute;
-	}
 
 	/**
 	 * DOCUMENT ME!
@@ -276,15 +251,6 @@ public class AttributeMappingParameters implements MappingParameter {
 		return attributeNames.length;
 	}
 
-	public Boolean getCaseSensitive() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public ObjectType getObjectType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/**
 	 * DOCUMENT ME!
@@ -329,67 +295,69 @@ public class AttributeMappingParameters implements MappingParameter {
 		return attr2id;
 	}
 
-	/**
-	 * Building hashmap for attribute <--> object ID mapping.
-	 * 
-	 */
-	private void buildAttribute2IDMap(Iterator<Node> it) {
-		// Mapping from attribute value to object ID.
-		attr2id = new HashMap<String, List<String>>();
-
-		String objectID = null;
-		Object valObj = null;
-
-		while (it.hasNext()) {
-
-			Node node = (Node) it.next();
-			objectID = node.getIdentifier();
-
-			if (CyAttributesUtils.getClass(mappingAttribute, attributes) == List.class) {
-				valObj = attributes
-						.getListAttribute(objectID, mappingAttribute);
-			} else if (CyAttributesUtils.getClass(mappingAttribute, attributes) != Map.class) {
-				valObj = attributes.getAttribute(objectID, mappingAttribute);
-			}
-
-			// Put the <attribute value>-<object ID list> pair to the Map
-			// object.
-			if (valObj != null) {
-				if (valObj instanceof List) {
-					List keys = (List) valObj;
-
-					for (Object key : keys) {
-						if (key != null) {
-							putAttrValue(key.toString(), objectID);
-						}
-					}
-				} else {
-					putAttrValue(valObj.toString(), objectID);
-				}
-
-				// if (attr2id.containsKey(attributeValue)) {
-				// objIdList = (List<String>) attr2id.get(attributeValue);
-				// } else {
-				// objIdList = new ArrayList<String>();
-				// }
-				//
-				// objIdList.add(objectID);
-				// attr2id.put(attributeValue, objIdList);
-			}
-		}
-	}
-
-	private void putAttrValue(String attributeValue, String objectID) {
-		List<String> objIdList = null;
-
-		if (attr2id.containsKey(attributeValue)) {
-			objIdList = attr2id.get(attributeValue);
-		} else {
-			objIdList = new ArrayList<String>();
-		}
-
-		objIdList.add(objectID);
-		attr2id.put(attributeValue, objIdList);
-	}
+//	/**
+//	 * Building hashmap for attribute <--> object ID mapping.
+//	 * 
+//	 * NOT USED HERE. BUT MAY BE USEFUL CODE.
+//	 * 
+//	 */
+//	private void buildAttribute2IDMap(Iterator<Node> it) {
+//		// Mapping from attribute value to object ID.
+//		attr2id = new HashMap<String, List<String>>();
+//
+//		String objectID = null;
+//		Object valObj = null;
+//
+//		while (it.hasNext()) {
+//
+//			Node node = (Node) it.next();
+//			objectID = node.getIdentifier();
+//
+//			if (CyAttributesUtils.getClass(mappingAttribute, attributes) == List.class) {
+//				valObj = attributes
+//						.getListAttribute(objectID, mappingAttribute);
+//			} else if (CyAttributesUtils.getClass(mappingAttribute, attributes) != Map.class) {
+//				valObj = attributes.getAttribute(objectID, mappingAttribute);
+//			}
+//
+//			// Put the <attribute value>-<object ID list> pair to the Map
+//			// object.
+//			if (valObj != null) {
+//				if (valObj instanceof List) {
+//					List keys = (List) valObj;
+//
+//					for (Object key : keys) {
+//						if (key != null) {
+//							putAttrValue(key.toString(), objectID);
+//						}
+//					}
+//				} else {
+//					putAttrValue(valObj.toString(), objectID);
+//				}
+//
+//				// if (attr2id.containsKey(attributeValue)) {
+//				// objIdList = (List<String>) attr2id.get(attributeValue);
+//				// } else {
+//				// objIdList = new ArrayList<String>();
+//				// }
+//				//
+//				// objIdList.add(objectID);
+//				// attr2id.put(attributeValue, objIdList);
+//			}
+//		}
+//	}
+//
+//	private void putAttrValue(String attributeValue, String objectID) {
+//		List<String> objIdList = null;
+//
+//		if (attr2id.containsKey(attributeValue)) {
+//			objIdList = attr2id.get(attributeValue);
+//		} else {
+//			objIdList = new ArrayList<String>();
+//		}
+//
+//		objIdList.add(objectID);
+//		attr2id.put(attributeValue, objIdList);
+//	}
 
 }
