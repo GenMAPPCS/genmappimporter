@@ -63,27 +63,6 @@ public interface MappingParameter {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public ObjectType getObjectType();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String getMappingAttribute();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public boolean[] getImportFlag();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String[] getAttributeNames();
 
 	/**
@@ -99,11 +78,4 @@ public interface MappingParameter {
 	 * @return  DOCUMENT ME!
 	 */
 	public String getListDelimiter();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Boolean getCaseSensitive();
 }

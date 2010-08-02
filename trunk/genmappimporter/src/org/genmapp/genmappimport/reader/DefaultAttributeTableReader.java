@@ -53,14 +53,9 @@ import cytoscape.util.URLUtil;
  * based on the given parameters, map the text table to CyAttributes.
  * </p>
  * 
- * @author kono
- * 
  */
 public class DefaultAttributeTableReader implements TextTableReader {
-	/**
-	 * Lines begin with this charactor will be considered as comment lines.
-	 */
-	private static final int DEF_KEY_COLUMN = 0;
+
 	private final URL source;
 	private AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
@@ -68,109 +63,33 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	// Number of mapped attributes.
 	private int globalCounter = 0;
 
-	/*
-	 * Reader will read entries from this line.
-	 */
+	// Reader will read entries from this line.
 	private final int startLineNumber;
+
+	// Lines beginning with this character will be considered as comment lines.
 	private String commentChar = null;
 
-	// If this is on, import everything using ID as the key.
-	private boolean importAll = false;
-
-	/**
-	 * Constructor.<br>
-	 * 
-	 * @param source
-	 * @param objectType
-	 * @param delimiters
-	 * @throws Exception
-	 */
-	public DefaultAttributeTableReader(final URL source,
-			final ObjectType objectType, final List<String> delimiters)
-			throws Exception {
-		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null,
-				null, null, null, 0);
-	}
-
 	/**
 	 * Creates a new DefaultAttributeTableReader object.
 	 * 
 	 * @param source
-	 *            DOCUMENT ME!
-	 * @param objectType
-	 *            DOCUMENT ME!
-	 * @param delimiters
-	 *            DOCUMENT ME!
-	 * @param key
-	 *            DOCUMENT ME!
-	 * @param columnNames
-	 *            DOCUMENT ME!
-	 * 
-	 * @throws Exception
-	 *             DOCUMENT ME!
-	 */
-	public DefaultAttributeTableReader(final URL source,
-			final ObjectType objectType, final List<String> delimiters,
-			final int key, final String[] columnNames) throws Exception {
-		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null,
-				columnNames, null, null, 0);
-	}
-
-	/**
-	 * Constructor with full options.<br>
-	 * 
-	 * @param source
-	 *            Source file URL (can be remote or local)
-	 * @param objectType
-	 * @param delimiter
-	 * @param listDelimiter
-	 * @param key
-	 * @param aliases
-	 * @param columnNames
-	 * @param toBeImported
-	 * @throws Exception
-	 */
-	public DefaultAttributeTableReader(final URL source,
-			final ObjectType objectType, final List<String> delimiters,
-			final String listDelimiter, final int keyIndex,
-			final String mappingAttribute, final List<Integer> aliasIndexList,
-			final String[] attributeNames, final Byte[] attributeTypes,
-			final boolean[] importFlag, final int startLineNumber)
-			throws Exception {
-		this.source = source;
-		this.startLineNumber = startLineNumber;
-		this.mapping = new AttributeMappingParameters(delimiters,
-				listDelimiter, keyIndex, attributeNames, attributeTypes, null);
-		this.parser = new AttributeLineParser(mapping);
-	}
-
-	/**
-	 * Creates a new DefaultAttributeTableReader object.
-	 * 
-	 * @param source
-	 *            DOCUMENT ME!
+	 *            Source file URL (can be remote or local file path)
 	 * @param mapping
-	 *            DOCUMENT ME!
+	 *            attribute mapping parameter
 	 * @param startLineNumber
-	 *            DOCUMENT ME!
+	 *            row to start reading
 	 * @param commentChar
-	 *            DOCUMENT ME!
+	 *            character to indicate comment row(s) to be skipped
 	 */
 	public DefaultAttributeTableReader(final URL source,
 			AttributeMappingParameters mapping, final int startLineNumber,
 			final String commentChar) {
-		this(source, mapping, startLineNumber, commentChar, false);
-	}
-
-	public DefaultAttributeTableReader(final URL source,
-			AttributeMappingParameters mapping, final int startLineNumber,
-			final String commentChar, boolean importAll) {
 		this.source = source;
 		this.mapping = mapping;
 		this.startLineNumber = startLineNumber;
 		this.parser = new AttributeLineParser(mapping);
 		this.commentChar = commentChar;
-		this.importAll = importAll;
+
 	}
 
 	/**
@@ -206,14 +125,14 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		final String delimiter = mapping.getDelimiterRegEx();
 		while ((line = bufRd.readLine()) != null) {
 			/*
-			 * Ignore Empty & Commnet lines.
+			 * Ignore Empty & Comment lines.
 			 */
 			if ((commentChar != null) && line.startsWith(commentChar)) {
 				// Do nothing
 			} else if ((lineCount >= startLineNumber)
 					&& (line.trim().length() > 0)) {
 				parts = line.split(delimiter);
-				// If key dos not exists, ignore the line.
+				// If key does not exists, ignore the line.
 				if (parts.length >= mapping.getKeyIndex() + 1) {
 					try {
 						parser.parseAll(parts);
@@ -232,9 +151,9 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	}
 
 	/**
-	 * DOCUMENT ME!
+	 * Produce report on import stats
 	 * 
-	 * @return DOCUMENT ME!
+	 * @return string
 	 */
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();

@@ -53,10 +53,6 @@ import java.util.Map;
  * This reader takes one sheet at a time.
  * </p>
  * 
- * @version 0.7
- * @since Cytoscape 2.4
- * @author kono
- * 
  */
 public class ExcelAttributeSheetReader implements TextTableReader {
 	private final HSSFSheet sheet;
@@ -64,7 +60,6 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final AttributeLineParser parser;
 	private final int startLineNumber;
 	private int globalCounter = 0;
-	private boolean importAll = false;
 
 	/**
 	 * Constructor.<br>
@@ -76,29 +71,10 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 */
 	public ExcelAttributeSheetReader(final HSSFSheet sheet,
 			final AttributeMappingParameters mapping, final int startLineNumber) {
-		this(sheet, mapping, startLineNumber, false);
-	}
-
-	/**
-	 * Creates a new ExcelAttributeSheetReader object.
-	 * 
-	 * @param sheet
-	 *            DOCUMENT ME!
-	 * @param mapping
-	 *            DOCUMENT ME!
-	 * @param startLineNumber
-	 *            DOCUMENT ME!
-	 * @param importAll
-	 *            DOCUMENT ME!
-	 */
-	public ExcelAttributeSheetReader(final HSSFSheet sheet,
-			final AttributeMappingParameters mapping,
-			final int startLineNumber, boolean importAll) {
 		this.sheet = sheet;
 		this.mapping = mapping;
 		this.startLineNumber = startLineNumber;
 		this.parser = new AttributeLineParser(mapping);
-		this.importAll = importAll;
 	}
 
 	/**
@@ -136,7 +112,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 * For a given Excell row, convert the cells into String.
+	 * For a given Excel row, convert the cells into String.
 	 * 
 	 * @param row
 	 * @return
@@ -174,9 +150,9 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 * DOCUMENT ME!
+	 * Produce report on import stats
 	 * 
-	 * @return DOCUMENT ME!
+	 * @return string
 	 */
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
