@@ -31,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.genmapp.genmappimport.reader;
 
 import cytoscape.data.CyAttributes;
@@ -45,19 +45,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Reader for Excel attribute workbook.<br>
  * This class creates string array and pass it to the AttributeLineParser.<br>
- *
+ * 
  * <p>
  * This reader takes one sheet at a time.
  * </p>
- *
+ * 
  * @version 0.7
  * @since Cytoscape 2.4
  * @author kono
- *
+ * 
  */
 public class ExcelAttributeSheetReader implements TextTableReader {
 	private final HSSFSheet sheet;
@@ -69,29 +68,32 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 
 	/**
 	 * Constructor.<br>
-	 *
+	 * 
 	 * Takes one Excel sheet as parameter.
-	 *
+	 * 
 	 * @param sheet
 	 * @param mapping
 	 */
 	public ExcelAttributeSheetReader(final HSSFSheet sheet,
-	                                 final AttributeMappingParameters mapping,
-	                                 final int startLineNumber) {
+			final AttributeMappingParameters mapping, final int startLineNumber) {
 		this(sheet, mapping, startLineNumber, false);
 	}
 
 	/**
 	 * Creates a new ExcelAttributeSheetReader object.
-	 *
-	 * @param sheet  DOCUMENT ME!
-	 * @param mapping  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param importAll  DOCUMENT ME!
+	 * 
+	 * @param sheet
+	 *            DOCUMENT ME!
+	 * @param mapping
+	 *            DOCUMENT ME!
+	 * @param startLineNumber
+	 *            DOCUMENT ME!
+	 * @param importAll
+	 *            DOCUMENT ME!
 	 */
 	public ExcelAttributeSheetReader(final HSSFSheet sheet,
-	                                 final AttributeMappingParameters mapping,
-	                                 final int startLineNumber, boolean importAll) {
+			final AttributeMappingParameters mapping,
+			final int startLineNumber, boolean importAll) {
 		this.sheet = sheet;
 		this.mapping = mapping;
 		this.startLineNumber = startLineNumber;
@@ -100,18 +102,19 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
 	 */
 	public List getColumnNames() {
 		return null;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
+	 * DOCUMENT ME!
+	 * 
+	 * @throws IOException
+	 *             DOCUMENT ME!
 	 */
 	public void readTable() throws IOException {
 		HSSFRow row;
@@ -121,15 +124,12 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		while ((row = sheet.getRow(rowCount)) != null) {
 			cellsInOneRow = createElementStringArray(row);
 			try {
-				if(importAll)
-					parser.parseAll(cellsInOneRow);
-				else 
-					parser.parseEntry(cellsInOneRow);
+				parser.parseAll(cellsInOneRow);
 			} catch (Exception ex) {
 				System.out.println("Couldn't parse row: " + rowCount);
 				ex.printStackTrace();
 			}
-			
+
 			rowCount++;
 			globalCounter++;
 		}
@@ -137,7 +137,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 
 	/**
 	 * For a given Excell row, convert the cells into String.
-	 *
+	 * 
 	 * @param row
 	 * @return
 	 */
@@ -174,9 +174,9 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
 	 */
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
@@ -185,13 +185,14 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 
 		int limit = 10;
 		if (invalid.size() > 0) {
-			sb.append("\n\nThe following enties are invalid and were not imported:\n");
+			sb
+					.append("\n\nThe following enties are invalid and were not imported:\n");
 
 			for (String key : invalid.keySet()) {
 				sb.append(key + " = " + invalid.get(key) + "\n");
-				if ( limit-- <= 0 ) {
-					sb.append("Approximately " + (invalid.size() - 10) +
-					          " additional entries were not imported...");
+				if (limit-- <= 0) {
+					sb.append("Approximately " + (invalid.size() - 10)
+							+ " additional entries were not imported...");
 					break;
 				}
 
