@@ -39,14 +39,8 @@ package org.genmapp.genmappimport.ui.theme;
 import javax.swing.ImageIcon;
 
 /**
- * Iconset for Import Dialog GUI.<br>
- *
- * <p>
- *  By sharing these enums among GUIs, we can define Theme for the dialog.
- * </p>
- *
- * @author kono
- *
+ * Iconset for Import Dialog GUI.
+ * 
  */
 public enum ImportDialogIconSets {
 	STRING_ICON("images/ximian/stock_font-16.png"),

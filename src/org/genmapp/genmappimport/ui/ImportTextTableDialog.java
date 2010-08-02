@@ -122,10 +122,6 @@ public class ImportTextTableDialog extends JDialog implements
 	 * 
 	 * SIMPLE_ATTRIBUTE_IMPORT: Import attributes in text table.
 	 * 
-	 * ONTOLOGY_AND_ANNOTATION_IMPORT: Load ontology and map attributes in text
-	 * table.
-	 * 
-	 * NETWORK_IMPORT: Import text table as a network.
 	 */
 	public static final int SIMPLE_ATTRIBUTE_IMPORT = 1;
 
@@ -181,10 +177,6 @@ public class ImportTextTableDialog extends JDialog implements
 	/*
 	 * Tracking multiple sheets.
 	 */
-	private Map<String, AliasTableModel> aliasTableModelMap;
-
-	private Map<String, JTable> aliasTableMap;
-
 	private Map<String, Integer> primaryKeyMap;
 
 	private String[] columnHeaders;
@@ -278,19 +270,10 @@ public class ImportTextTableDialog extends JDialog implements
 			 */
 			final int columnCount = previewPanel.getPreviewTable()
 					.getColumnCount();
-			aliasTableModelMap.put(previewPanel.getSelectedSheetName(),
-					new AliasTableModel(keyTable, columnCount));
 
 			updatePrimaryKeyComboBox();
 		} else if (evt.getPropertyName()
 				.equals(NETWORK_IMPORT_TEMPLATE_CHANGED)) {
-			/*
-			 * This is a signal from network import options panel.
-			 */
-			List<Integer> columnIdx = (List<Integer>) evt.getNewValue();
-
-			final AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) previewPanel
-					.getPreviewTable().getCellRenderer(0, 0);
 
 			previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
 			previewPanel.getPreviewTable().repaint();
@@ -334,11 +317,7 @@ public class ImportTextTableDialog extends JDialog implements
 		selectAttributeFileButton = new javax.swing.JButton();
 		advancedPanel = new javax.swing.JPanel();
 		textImportCheckBox = new javax.swing.JCheckBox();
-		primaryKeyLabel = new javax.swing.JLabel();
-		nodeKeyLabel = new javax.swing.JLabel();
 		mappingAttributeComboBox = new javax.swing.JComboBox();
-		aliasScrollPane = new javax.swing.JScrollPane();
-		arrowButton1 = new javax.swing.JButton();
 		textImportOptionPanel = new javax.swing.JPanel();
 		delimiterPanel = new javax.swing.JPanel();
 		tabCheckBox = new javax.swing.JCheckBox();
@@ -1010,7 +989,7 @@ public class ImportTextTableDialog extends JDialog implements
 		for (int i = 0; i < colCount; i++) {
 			importFlag[i] = ((AttributePreviewTableCellRenderer) previewPanel
 					.getPreviewTable().getCellRenderer(0, i)).getImportFlag(i);
-			//System.out.println("col"+i+": "+importFlag[i]);
+			// System.out.println("col"+i+": "+importFlag[i]);
 		}
 
 		/*
@@ -1078,7 +1057,8 @@ public class ImportTextTableDialog extends JDialog implements
 			List<String> del = new ArrayList<String>();
 			del.add(" += +");
 			mapping = new AttributeMappingParameters(del, listDelimiter,
-					keyInFile, attributeNames, attributeTypes, listDataTypes, importFlag);
+					keyInFile, attributeNames, attributeTypes, listDataTypes,
+					importFlag);
 		} else
 			mapping = new AttributeMappingParameters(checkDelimiter(),
 					listDelimiter, keyInFile, attributeNames, attributeTypes,
@@ -1621,7 +1601,6 @@ public class ImportTextTableDialog extends JDialog implements
 		statusBar.setRightLabel(message3);
 	}
 
-
 	private List<String> checkDelimiter() {
 		final List<String> delList = new ArrayList<String>();
 
@@ -1860,15 +1839,8 @@ public class ImportTextTableDialog extends JDialog implements
 
 	}
 
-	// Variables declaration - do not modify
-	private javax.swing.JCheckBox advancedOptionCheckBox;
-
+	// Variables declaration
 	private javax.swing.JPanel advancedPanel;
-
-	// private JTable aliasTable;
-	private javax.swing.JScrollPane aliasScrollPane;
-
-	private javax.swing.JButton arrowButton1;
 
 	private javax.swing.JCheckBox transferNameCheckBox;
 
@@ -1892,8 +1864,6 @@ public class ImportTextTableDialog extends JDialog implements
 
 	private javax.swing.JComboBox mappingAttributeComboBox;
 
-	private javax.swing.JLabel nodeKeyLabel;
-
 	private javax.swing.JRadioButton nodeRadioButton;
 
 	private javax.swing.JTextField otherDelimiterTextField;
@@ -1901,8 +1871,6 @@ public class ImportTextTableDialog extends JDialog implements
 	private javax.swing.JCheckBox otherCheckBox;
 
 	private PreviewTablePanel previewPanel;
-
-	private javax.swing.JLabel primaryKeyLabel;
 
 	private javax.swing.JButton selectAttributeFileButton;
 
@@ -1931,8 +1899,6 @@ public class ImportTextTableDialog extends JDialog implements
 	private JComboBox primaryKeyComboBox;
 
 	private JLabel primaryLabel;
-
-	private JPanel attrTypePanel;
 
 	private javax.swing.JRadioButton showAllRadioButton;
 
@@ -1965,6 +1931,7 @@ public class ImportTextTableDialog extends JDialog implements
 
 }
 
+@SuppressWarnings("serial")
 class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 	private List<Byte> attributeDataTypes;
 
@@ -2018,46 +1985,3 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 	}
 }
 
-class AliasTableModel extends DefaultTableModel {
-	AliasTableModel(String[] columnNames, int rowNum) {
-		super(columnNames, rowNum);
-	}
-
-	AliasTableModel(Object[][] data, Object[] colNames) {
-		super(data, colNames);
-	}
-
-	AliasTableModel() {
-		super();
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param col
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public Class getColumnClass(int col) {
-		return getValueAt(0, col).getClass();
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param row
-	 *            DOCUMENT ME!
-	 * @param column
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public boolean isCellEditable(int row, int column) {
-		if (column == 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-}

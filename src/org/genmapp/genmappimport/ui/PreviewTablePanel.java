@@ -34,35 +34,9 @@
  */
 package org.genmapp.genmappimport.ui;
 
-import cytoscape.Cytoscape;
-
-import cytoscape.data.CyAttributes;
-
-import cytoscape.util.URLUtil;
-
-import cytoscape.util.swing.ColumnResizer;
-
-import static org.genmapp.genmappimport.ui.theme.ImportDialogColorTheme.ALIAS_COLOR;
-import static org.genmapp.genmappimport.ui.theme.ImportDialogColorTheme.ONTOLOGY_COLOR;
-import static org.genmapp.genmappimport.ui.theme.ImportDialogColorTheme.PRIMARY_KEY_COLOR;
-import static org.genmapp.genmappimport.ui.theme.ImportDialogColorTheme.SPECIES_COLOR;
-import static org.genmapp.genmappimport.ui.theme.ImportDialogFontTheme.LABEL_FONT;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogIconSets.RIGHT_ARROW_ICON;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogIconSets.SPREADSHEET_ICON;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogIconSets.TEXT_FILE_ICON;
-
-import org.apache.poi.hssf.model.Model;
-import org.apache.poi.hssf.model.Workbook;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSDocument;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-
-import org.genmapp.genmappimport.reader.TextFileDelimiters;
-import org.genmapp.genmappimport.ui.ImportTextTableDialog.FileTypes;
-import org.jdesktop.layout.GroupLayout;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -74,17 +48,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.net.URL;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +62,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
-
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -104,40 +72,37 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.genmapp.genmappimport.reader.TextFileDelimiters;
+import org.genmapp.genmappimport.ui.ImportTextTableDialog.FileTypes;
+import org.jdesktop.layout.GroupLayout;
+
+import cytoscape.Cytoscape;
+import cytoscape.data.CyAttributes;
+import cytoscape.util.URLUtil;
+import cytoscape.util.swing.ColumnResizer;
+
 /**
  * General purpose preview table panel.
  * 
- * @author kono
- * 
  */
+@SuppressWarnings("serial")
 public class PreviewTablePanel extends JPanel {
 	/*
 	 * Define type of preview.
 	 */
-
-	/**
-	 *
-	 */
 	public static final int ATTRIBUTE_PREVIEW = 1;
-
-	/**
-	 *
-	 */
-	public static final int ONTOLOGY_PREVIEW = 2;
-
-	/**
-	 *
-	 */
-	public static final int NETWORK_PREVIEW = 3;
 
 	/*
 	 * Default messages
@@ -229,15 +194,7 @@ public class PreviewTablePanel extends JPanel {
 	private void hideUnnecessaryComponents() {
 		fileTypeLabel.setVisible(false);
 
-		if (panelType == NETWORK_PREVIEW) {
-			keyPreviewScrollPane.setVisible(false);
-			rightArrowLabel.setVisible(false);
-			legendLabel.setVisible(false);
-			primaryKeyLabel.setVisible(false);
-			aliasLabel.setVisible(false);
-			ontologyTermLabel.setVisible(false);
-			taxonomyLabel.setVisible(false);
-		} else if (panelType == ATTRIBUTE_PREVIEW) {
+		if (panelType == ATTRIBUTE_PREVIEW) {
 			ontologyTermLabel.setVisible(false);
 			taxonomyLabel.setVisible(false);
 		}
@@ -754,22 +711,7 @@ public class PreviewTablePanel extends JPanel {
 		newTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		newTable.setDefaultEditor(Object.class, null);
 
-		if (panelType == NETWORK_PREVIEW) {
-			final int colCount = newTable.getColumnCount();
-			final boolean[] importFlag = new boolean[colCount];
-
-			for (int i = 0; i < colCount; i++) {
-				importFlag[i] = false;
-			}
-
-			TableCellRenderer netRenderer = new AttributePreviewTableCellRenderer(
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					importFlag, TextFileDelimiters.PIPE.toString());
-
-			newTable.setDefaultRenderer(Object.class, netRenderer);
-		} else {
-			newTable.setDefaultRenderer(Object.class, renderer);
-		}
+		newTable.setDefaultRenderer(Object.class, renderer);
 
 		JTableHeader hd = newTable.getTableHeader();
 		hd.setReorderingAllowed(false);
@@ -1175,6 +1117,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 }
 
+@SuppressWarnings("serial")
 class KeyAttributeListRenderer extends JLabel implements ListCellRenderer {
 	private static final Font KEY_LIST_FONT = new Font("Sans-Serif", Font.BOLD,
 			16);

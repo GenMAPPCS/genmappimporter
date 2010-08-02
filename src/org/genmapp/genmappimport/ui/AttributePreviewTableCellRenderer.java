@@ -67,8 +67,6 @@ import cytoscape.data.CyAttributes;
 /**
  * Cell and table header renderer for preview table.
  * 
- * @author kono
- * 
  */
 public class AttributePreviewTableCellRenderer extends DefaultTableCellRenderer {
 	/**

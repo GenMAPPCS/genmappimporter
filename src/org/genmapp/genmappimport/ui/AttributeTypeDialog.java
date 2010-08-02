@@ -46,8 +46,8 @@ import javax.swing.DefaultComboBoxModel;
 
 /**
  *
- * @author kono
  */
+@SuppressWarnings("serial")
 public class AttributeTypeDialog extends javax.swing.JDialog {
 	private static final String STRING = "List of Strings";
 	private static final String INTEGER = "List of Integers";
