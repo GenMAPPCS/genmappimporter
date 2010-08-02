@@ -36,47 +36,33 @@ package org.genmapp.genmappimport.reader;
 
 import static org.genmapp.genmappimport.reader.TextFileDelimiters.PIPE;
 import static org.genmapp.genmappimport.reader.TextFileDelimiters.TAB;
-import static org.genmapp.genmappimport.reader.TextTableReader.ObjectType.NODE;
-import giny.model.Node;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.genmapp.genmappimport.reader.TextTableReader.ObjectType;
-
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
-import cytoscape.data.CyAttributesUtils;
-import cytoscape.data.synonyms.Aliases;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.
  * 
  */
-public class AttributeMappingParameters implements MappingParameter {
+public class AttributeMappingParameters {
 
 	public static final String ID = "ID";
 	private static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
-	private final ObjectType objectType;
 	private final int keyIndex;
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
-	private final String mappingAttribute;
 	private List<String> delimiters;
 	private String listDelimiter;
 	private boolean[] importFlag;
 	private Map<String, List<String>> attr2id;
 	private CyAttributes attributes;
-	private Aliases existingAliases;
-
-	// Case sensitivity
-	private Boolean caseSensitive;
 
 	/**
 	 * Creates a new AttributeMappingParameters object.
@@ -97,10 +83,19 @@ public class AttributeMappingParameters implements MappingParameter {
 	 * @throws Exception
 	 *             columns must have headers
 	 */
+	/**
+	 * @param delimiters
+	 * @param listDelimiter
+	 * @param keyIndex
+	 * @param attrNames
+	 * @param attributeTypes
+	 * @param listAttributeTypes
+	 * @throws Exception
+	 */
 	public AttributeMappingParameters(final List<String> delimiters,
 			final String listDelimiter, final int keyIndex,
 			final String[] attrNames, Byte[] attributeTypes,
-			Byte[] listAttributeTypes)
+			Byte[] listAttributeTypes, boolean[] importFlag)
 
 	throws Exception {
 		if (attrNames == null) {
@@ -120,15 +115,8 @@ public class AttributeMappingParameters implements MappingParameter {
 		 */
 		this.keyIndex = keyIndex;
 		this.attributeNames = attrNames;
-		
+
 		this.listAttributeTypes = listAttributeTypes;
-		this.caseSensitive = false; // case insensitive node mapping
-		this.objectType = NODE;
-		this.mappingAttribute = ID;
-		this.importFlag = new boolean[attrNames.length];
-		for (int i = 0; i < this.importFlag.length; i++) {
-			this.importFlag[i] = true; // import everything
-		}
 
 		/*
 		 * If delimiter is not available, use default value (TAB)
@@ -162,17 +150,27 @@ public class AttributeMappingParameters implements MappingParameter {
 			this.attributeTypes = attributeTypes;
 		}
 
-		final Iterator<Node> it;
-			attributes = Cytoscape.getNodeAttributes();
-			existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
-			it = Cytoscape.getRootGraph().nodesIterator();
+		/*
+		 * Selective import of columns
+		 */
+		if (importFlag == null) {
+			this.importFlag = new boolean[attrNames.length];
 
-//		if ((this.mappingAttribute != null)
-//				&& !this.mappingAttribute.equals(ID)) {
-//			buildAttribute2IDMap(it);
-//		}
+			for (int i = 0; i < this.importFlag.length; i++) {
+				this.importFlag[i] = true;
+			}
+		} else {
+			this.importFlag = importFlag;
+		}
+		attributes = Cytoscape.getNodeAttributes();
+
+		// final Iterator<Node> it;
+		// it = Cytoscape.getRootGraph().nodesIterator();
+		// if ((this.mappingAttribute != null)
+		// && !this.mappingAttribute.equals(ID)) {
+		// buildAttribute2IDMap(it);
+		// }
 	}
-
 
 	/**
 	 * DOCUMENT ME!
@@ -211,7 +209,16 @@ public class AttributeMappingParameters implements MappingParameter {
 		return listAttributeTypes;
 	}
 
-
+	/**
+	 *  DOCUMENT ME!
+	 *
+	 * @return  DOCUMENT ME!
+	 */
+	public boolean[] getImportFlag() {
+		// TODO Auto-generated method stub
+		return importFlag;
+	}
+	
 	/**
 	 * DOCUMENT ME!
 	 * 
@@ -232,7 +239,6 @@ public class AttributeMappingParameters implements MappingParameter {
 		return listDelimiter;
 	}
 
-
 	/**
 	 * DOCUMENT ME!
 	 * 
@@ -250,7 +256,6 @@ public class AttributeMappingParameters implements MappingParameter {
 	public int getColumnCount() {
 		return attributeNames.length;
 	}
-
 
 	/**
 	 * DOCUMENT ME!
@@ -295,69 +300,71 @@ public class AttributeMappingParameters implements MappingParameter {
 		return attr2id;
 	}
 
-//	/**
-//	 * Building hashmap for attribute <--> object ID mapping.
-//	 * 
-//	 * NOT USED HERE. BUT MAY BE USEFUL CODE.
-//	 * 
-//	 */
-//	private void buildAttribute2IDMap(Iterator<Node> it) {
-//		// Mapping from attribute value to object ID.
-//		attr2id = new HashMap<String, List<String>>();
-//
-//		String objectID = null;
-//		Object valObj = null;
-//
-//		while (it.hasNext()) {
-//
-//			Node node = (Node) it.next();
-//			objectID = node.getIdentifier();
-//
-//			if (CyAttributesUtils.getClass(mappingAttribute, attributes) == List.class) {
-//				valObj = attributes
-//						.getListAttribute(objectID, mappingAttribute);
-//			} else if (CyAttributesUtils.getClass(mappingAttribute, attributes) != Map.class) {
-//				valObj = attributes.getAttribute(objectID, mappingAttribute);
-//			}
-//
-//			// Put the <attribute value>-<object ID list> pair to the Map
-//			// object.
-//			if (valObj != null) {
-//				if (valObj instanceof List) {
-//					List keys = (List) valObj;
-//
-//					for (Object key : keys) {
-//						if (key != null) {
-//							putAttrValue(key.toString(), objectID);
-//						}
-//					}
-//				} else {
-//					putAttrValue(valObj.toString(), objectID);
-//				}
-//
-//				// if (attr2id.containsKey(attributeValue)) {
-//				// objIdList = (List<String>) attr2id.get(attributeValue);
-//				// } else {
-//				// objIdList = new ArrayList<String>();
-//				// }
-//				//
-//				// objIdList.add(objectID);
-//				// attr2id.put(attributeValue, objIdList);
-//			}
-//		}
-//	}
-//
-//	private void putAttrValue(String attributeValue, String objectID) {
-//		List<String> objIdList = null;
-//
-//		if (attr2id.containsKey(attributeValue)) {
-//			objIdList = attr2id.get(attributeValue);
-//		} else {
-//			objIdList = new ArrayList<String>();
-//		}
-//
-//		objIdList.add(objectID);
-//		attr2id.put(attributeValue, objIdList);
-//	}
+	// /**
+	// * Building hashmap for attribute <--> object ID mapping.
+	// *
+	// * NOT USED HERE. BUT MAY BE USEFUL CODE.
+	// *
+	// */
+	// private void buildAttribute2IDMap(Iterator<Node> it) {
+	// // Mapping from attribute value to object ID.
+	// attr2id = new HashMap<String, List<String>>();
+	//
+	// String objectID = null;
+	// Object valObj = null;
+	//
+	// while (it.hasNext()) {
+	//
+	// Node node = (Node) it.next();
+	// objectID = node.getIdentifier();
+	//
+	// if (CyAttributesUtils.getClass(mappingAttribute, attributes) ==
+	// List.class) {
+	// valObj = attributes
+	// .getListAttribute(objectID, mappingAttribute);
+	// } else if (CyAttributesUtils.getClass(mappingAttribute, attributes) !=
+	// Map.class) {
+	// valObj = attributes.getAttribute(objectID, mappingAttribute);
+	// }
+	//
+	// // Put the <attribute value>-<object ID list> pair to the Map
+	// // object.
+	// if (valObj != null) {
+	// if (valObj instanceof List) {
+	// List keys = (List) valObj;
+	//
+	// for (Object key : keys) {
+	// if (key != null) {
+	// putAttrValue(key.toString(), objectID);
+	// }
+	// }
+	// } else {
+	// putAttrValue(valObj.toString(), objectID);
+	// }
+	//
+	// // if (attr2id.containsKey(attributeValue)) {
+	// // objIdList = (List<String>) attr2id.get(attributeValue);
+	// // } else {
+	// // objIdList = new ArrayList<String>();
+	// // }
+	// //
+	// // objIdList.add(objectID);
+	// // attr2id.put(attributeValue, objIdList);
+	// }
+	// }
+	// }
+	//
+	// private void putAttrValue(String attributeValue, String objectID) {
+	// List<String> objIdList = null;
+	//
+	// if (attr2id.containsKey(attributeValue)) {
+	// objIdList = attr2id.get(attributeValue);
+	// } else {
+	// objIdList = new ArrayList<String>();
+	// }
+	//
+	// objIdList.add(objectID);
+	// attr2id.put(attributeValue, objIdList);
+	// }
 
 }

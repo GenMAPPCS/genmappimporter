@@ -35,9 +35,6 @@
 package org.genmapp.genmappimport.ui;
 
 import static org.genmapp.genmappimport.reader.TextFileDelimiters.PIPE;
-import static org.genmapp.genmappimport.reader.TextTableReader.ObjectType.EDGE;
-import static org.genmapp.genmappimport.reader.TextTableReader.ObjectType.NETWORK;
-import static org.genmapp.genmappimport.reader.TextTableReader.ObjectType.NODE;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogFontTheme.TITLE_FONT;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogIconSets.BOOLEAN_ICON;
 import static org.genmapp.genmappimport.ui.theme.ImportDialogIconSets.FLOAT_ICON;
@@ -119,7 +116,7 @@ import cytoscape.util.swing.JStatusBar;
  */
 @SuppressWarnings("serial")
 public class ImportTextTableDialog extends JDialog implements
-		PropertyChangeListener, TableModelListener {
+		PropertyChangeListener {
 	/**
 	 * This dialog GUI will be switched based on the following parameters:
 	 * 
@@ -131,11 +128,6 @@ public class ImportTextTableDialog extends JDialog implements
 	 * NETWORK_IMPORT: Import text table as a network.
 	 */
 	public static final int SIMPLE_ATTRIBUTE_IMPORT = 1;
-
-	/**
-	 * 
-	 */
-	public static final int NETWORK_IMPORT = 3;
 
 	/**
 	 * Enums for file types.
@@ -173,8 +165,6 @@ public class ImportTextTableDialog extends JDialog implements
 	private Boolean caseSensitive = false;
 
 	// Data Type
-	private org.genmapp.genmappimport.reader.TextTableReader.ObjectType objType;
-
 	private Map<String, String> annotationUrlMap;
 
 	private Map<String, String> annotationFormatMap;
@@ -227,11 +217,7 @@ public class ImportTextTableDialog extends JDialog implements
 		// Default Attribute is node attr.
 		selectedAttributes = Cytoscape.getNodeAttributes();
 
-		this.objType = NODE;
 		this.listDelimiter = PIPE.toString();
-
-		this.aliasTableModelMap = new HashMap<String, AliasTableModel>();
-		this.aliasTableMap = new HashMap<String, JTable>();
 		this.primaryKeyMap = new HashMap<String, Integer>();
 
 		annotationUrlMap = new HashMap<String, String>();
@@ -305,9 +291,6 @@ public class ImportTextTableDialog extends JDialog implements
 
 			final AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) previewPanel
 					.getPreviewTable().getCellRenderer(0, 0);
-			rend.setSourceIndex(columnIdx.get(0));
-			rend.setTargetIndex(columnIdx.get(1));
-			rend.setInteractionIndex(columnIdx.get(2));
 
 			previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
 			previewPanel.getPreviewTable().repaint();
@@ -918,29 +901,13 @@ public class ImportTextTableDialog extends JDialog implements
 	}
 
 	private void helpButtonActionPerformed(ActionEvent evt) {
-		//TODO: Quick help should be implemented!
+		// TODO: Quick help should be implemented!
 	}
 
 	private void otherTextFieldActionPerformed(KeyEvent evt) throws IOException {
 		if (otherCheckBox.isSelected()) {
 			displayPreview();
 		}
-	}
-
-	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
-		if (nodeRadioButton.isSelected()) {
-			selectedAttributes = Cytoscape.getNodeAttributes();
-			objType = NODE;
-		} else if (edgeRadioButton.isSelected()) {
-			selectedAttributes = Cytoscape.getEdgeAttributes();
-			objType = EDGE;
-		} else {
-			selectedAttributes = Cytoscape.getNetworkAttributes();
-			objType = NETWORK;
-		}
-
-		updateMappingAttributeComboBox();
-		setKeyList();
 	}
 
 	private void nodeKeyComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1043,6 +1010,7 @@ public class ImportTextTableDialog extends JDialog implements
 		for (int i = 0; i < colCount; i++) {
 			importFlag[i] = ((AttributePreviewTableCellRenderer) previewPanel
 					.getPreviewTable().getCellRenderer(0, i)).getImportFlag(i);
+			//System.out.println("col"+i+": "+importFlag[i]);
 		}
 
 		/*
@@ -1110,11 +1078,11 @@ public class ImportTextTableDialog extends JDialog implements
 			List<String> del = new ArrayList<String>();
 			del.add(" += +");
 			mapping = new AttributeMappingParameters(del, listDelimiter,
-					keyInFile, attributeNames, attributeTypes, listDataTypes);
+					keyInFile, attributeNames, attributeTypes, listDataTypes, importFlag);
 		} else
 			mapping = new AttributeMappingParameters(checkDelimiter(),
 					listDelimiter, keyInFile, attributeNames, attributeTypes,
-					listDataTypes);
+					listDataTypes, importFlag);
 
 		if (source.toString().endsWith(EXCEL_EXT)) {
 			/*
@@ -1434,7 +1402,7 @@ public class ImportTextTableDialog extends JDialog implements
 		if (sourceURL.toString().endsWith(EXCEL_EXT) == false) {
 			switchDelimiterCheckBoxes(true);
 		}
-		attributeRadioButtonActionPerformed(null);
+
 		/*
 		 * Set Status bar
 		 */
@@ -1618,11 +1586,8 @@ public class ImportTextTableDialog extends JDialog implements
 	private TableCellRenderer getRenderer(FileTypes type) {
 		final TableCellRenderer rend;
 
-		rend = new AttributePreviewTableCellRenderer(keyInFile,
-				new ArrayList<Integer>(),
-				AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-				AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-				importFlag, listDelimiter);
+		rend = new AttributePreviewTableCellRenderer(keyInFile, importFlag,
+				listDelimiter);
 
 		return rend;
 	}
@@ -1656,22 +1621,6 @@ public class ImportTextTableDialog extends JDialog implements
 		statusBar.setRightLabel(message3);
 	}
 
-	/**
-	 * Alias table changed.
-	 */
-	public void tableChanged(TableModelEvent evt) {
-		final int row = evt.getFirstRow();
-		final int col = evt.getColumn();
-		AliasTableModel curModel = aliasTableModelMap.get(previewPanel
-				.getSelectedSheetName());
-
-		if (col == 0) {
-			previewPanel.setAliasColumn(row, (Boolean) curModel.getValueAt(row,
-					col));
-		}
-
-		aliasScrollPane.repaint();
-	}
 
 	private List<String> checkDelimiter() {
 		final List<String> delList = new ArrayList<String>();
@@ -2013,6 +1962,7 @@ public class ImportTextTableDialog extends JDialog implements
 
 	// End of variables declaration
 	JStatusBar statusBar;
+
 }
 
 class ComboBoxRenderer extends JLabel implements ListCellRenderer {
