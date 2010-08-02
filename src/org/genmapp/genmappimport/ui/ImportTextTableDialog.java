@@ -306,12 +306,6 @@ public class ImportTextTableDialog extends JDialog implements
 
 			attributeDataTypes.set(key, newType);
 
-			final JTable curTable = aliasTableMap.get(previewPanel
-					.getSelectedSheetName());
-			curTable.setDefaultRenderer(Object.class, new AliasTableRenderer(
-					attributeDataTypes, primaryKeyComboBox.getSelectedIndex()));
-			curTable.repaint();
-
 		} else if (evt.getPropertyName().equals(ATTRIBUTE_NAME_CHANGED)) {
 			/*
 			 * Update Alias Table
@@ -319,9 +313,6 @@ public class ImportTextTableDialog extends JDialog implements
 			final Vector vec = (Vector) evt.getNewValue();
 			final String name = (String) vec.get(1);
 			final Integer column = (Integer) vec.get(0);
-
-			// Update cell in the attribute table
-			updateAliasTableCell(name, column);
 
 			// Update Primary Key combo box
 			updatePrimaryKeyComboBox();
@@ -335,7 +326,6 @@ public class ImportTextTableDialog extends JDialog implements
 			aliasTableModelMap.put(previewPanel.getSelectedSheetName(),
 					new AliasTableModel(keyTable, columnCount));
 
-			initializeAliasTable(columnCount, null);
 			updatePrimaryKeyComboBox();
 		} else if (evt.getPropertyName()
 				.equals(NETWORK_IMPORT_TEMPLATE_CHANGED)) {
@@ -537,8 +527,8 @@ public class ImportTextTableDialog extends JDialog implements
 		/*
 		 * Layout data for advanced panel
 		 */
-		advancedPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null,
-				"Options",
+		advancedPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(
+				null, "Options",
 				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
 				javax.swing.border.TitledBorder.DEFAULT_POSITION,
 				new java.awt.Font("Dialog", 1, 11)));
@@ -577,8 +567,9 @@ public class ImportTextTableDialog extends JDialog implements
 					}
 				});
 
-		textImportOptionPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-				
+		textImportOptionPanel.setBorder(javax.swing.BorderFactory
+				.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
 		delimiterPanel.setBorder(javax.swing.BorderFactory
 				.createTitledBorder("Delimiter"));
 		tabCheckBox.setText("Tab");
@@ -824,18 +815,17 @@ public class ImportTextTableDialog extends JDialog implements
 														.add(
 																transferNameCheckBox)
 														.add(startRowLabel)
-														.add(
-																startRowSpinner,
-																21,
-																21,
-																21)
+														.add(startRowSpinner,
+																21, 21, 21)
 														.add(commentLineLabel)
 														.add(
 																commentLineTextField,
 																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 																org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-										.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+										.addContainerGap(
+												GroupLayout.DEFAULT_SIZE,
+												Short.MAX_VALUE)));
 
 		org.jdesktop.layout.GroupLayout textImportOptionPanelLayout = new org.jdesktop.layout.GroupLayout(
 				textImportOptionPanel);
@@ -867,8 +857,7 @@ public class ImportTextTableDialog extends JDialog implements
 												Short.MAX_VALUE)
 										.addPreferredGap(
 												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(reloadButton)
-										.addContainerGap()));
+										.add(reloadButton).addContainerGap()));
 		textImportOptionPanelLayout
 				.setVerticalGroup(textImportOptionPanelLayout
 						.createParallelGroup(
@@ -980,22 +969,8 @@ public class ImportTextTableDialog extends JDialog implements
 
 		previewPanel.repaint();
 
-		JTable curTable = aliasTableMap
-				.get(previewPanel.getSelectedSheetName());
-		curTable.setModel(aliasTableModelMap.get(previewPanel
-				.getSelectedSheetName()));
-
-		if (curTable.getCellRenderer(0, 1) != null) {
-			((AliasTableRenderer) curTable.getCellRenderer(0, 1))
-					.setPrimaryKey(keyInFile);
-			aliasScrollPane.setViewportView(curTable);
-
-			primaryKeyMap.put(previewPanel.getSelectedSheetName(),
-					primaryKeyComboBox.getSelectedIndex());
-
-			aliasScrollPane.setViewportView(curTable);
-			curTable.repaint();
-		}
+		primaryKeyMap.put(previewPanel.getSelectedSheetName(),
+				primaryKeyComboBox.getSelectedIndex());
 
 		// Update table view
 		ColumnResizer.adjustColumnPreferredWidths(previewPanel
@@ -1087,7 +1062,6 @@ public class ImportTextTableDialog extends JDialog implements
 			startRowSpinner.setEnabled(true);
 		}
 
-		updateAliasTable();
 		updatePrimaryKeyComboBox();
 		repaint();
 	}
@@ -1225,15 +1199,12 @@ public class ImportTextTableDialog extends JDialog implements
 		if (previewPanel.isCytoscapeAttributeFile(source)) {
 			List<String> del = new ArrayList<String>();
 			del.add(" += +");
-			mapping = new AttributeMappingParameters(objType, del,
-					listDelimiter, keyInFile, mappingAttribute, aliasList,
-					attributeNames, attributeTypes, listDataTypes, importFlag,
-					caseSensitive);
+			mapping = new AttributeMappingParameters(del, listDelimiter,
+					keyInFile, attributeNames, attributeTypes, listDataTypes);
 		} else
-			mapping = new AttributeMappingParameters(objType, checkDelimiter(),
-					listDelimiter, keyInFile, mappingAttribute, aliasList,
-					attributeNames, attributeTypes, listDataTypes, importFlag,
-					caseSensitive);
+			mapping = new AttributeMappingParameters(checkDelimiter(),
+					listDelimiter, keyInFile, attributeNames, attributeTypes,
+					listDataTypes);
 
 		if (source.toString().endsWith(EXCEL_EXT)) {
 			/*
@@ -1260,7 +1231,6 @@ public class ImportTextTableDialog extends JDialog implements
 
 		dispose();
 	}
-
 
 	private void selectAttributeFileButtonActionPerformed(ActionEvent evt)
 			throws IOException {
@@ -1314,8 +1284,8 @@ public class ImportTextTableDialog extends JDialog implements
 
 	private void delimiterCheckBoxActionPerformed(ActionEvent evt)
 			throws IOException {
-//		transferNameCheckBox.setSelected(false);
-//		this.transferNameCheckBoxActionPerformed(null);
+		// transferNameCheckBox.setSelected(false);
+		// this.transferNameCheckBoxActionPerformed(null);
 		displayPreview();
 	}
 
@@ -1380,7 +1350,10 @@ public class ImportTextTableDialog extends JDialog implements
 		}
 	}
 
-	/* =============================================================================================== */
+	/*
+	 * ==========================================================================
+	 * =====================
+	 */
 
 	private void displayPreview() throws IOException {
 		final String selectedSourceName;
@@ -1490,7 +1463,6 @@ public class ImportTextTableDialog extends JDialog implements
 		otherDelimiterTextField.setEnabled(false);
 	}
 
-
 	/**
 	 * Generate preview table.<br>
 	 * 
@@ -1538,21 +1510,6 @@ public class ImportTextTableDialog extends JDialog implements
 		listDataTypes = previewPanel.getCurrentListDataTypes();
 
 		/*
-		 * Initialize all Alias Tables
-		 */
-		for (int i = 0; i < previewPanel.getTableCount(); i++) {
-			final int columnCount = previewPanel.getPreviewTable(i)
-					.getColumnCount();
-
-			aliasTableModelMap.put(previewPanel.getSheetName(i),
-					new AliasTableModel(keyTable, columnCount));
-
-			initializeAliasTable(columnCount, null, i);
-
-			updatePrimaryKeyComboBox();
-		}
-
-		/*
 		 * If this is not an Excel file, enable delimiter checkboxes.
 		 */
 		FileTypes type = checkFileType(sourceURL);
@@ -1573,7 +1530,6 @@ public class ImportTextTableDialog extends JDialog implements
 		startRowSpinner.setEnabled(true);
 		startRowLabel.setEnabled(true);
 	}
-
 
 	private void switchDelimiterCheckBoxes(Boolean state) {
 		tabCheckBox.setEnabled(state);
@@ -1729,121 +1685,6 @@ public class ImportTextTableDialog extends JDialog implements
 		// nodeKeyList.setListData(valueSet.toArray());
 	}
 
-	private void updateAliasTableCell(String name, int columnIndex) {
-		JTable curTable = aliasTableMap
-				.get(previewPanel.getSelectedSheetName());
-		curTable.setDefaultRenderer(Object.class, new AliasTableRenderer(
-				attributeDataTypes, primaryKeyComboBox.getSelectedIndex()));
-
-		AliasTableModel curModel = aliasTableModelMap.get(previewPanel
-				.getSelectedSheetName());
-		curModel.setValueAt(name, columnIndex, 1);
-		curTable.setModel(curModel);
-		curTable.repaint();
-		aliasScrollPane.repaint();
-		repaint();
-	}
-
-	private void updateAliasTable() {
-
-		JTable curTable = aliasTableMap
-				.get(previewPanel.getSelectedSheetName());
-
-		curTable.setDefaultRenderer(Object.class, new AliasTableRenderer(
-				attributeDataTypes, primaryKeyComboBox.getSelectedIndex()));
-
-		AliasTableModel curModel = aliasTableModelMap.get(previewPanel
-				.getSelectedSheetName());
-
-		Object curValue = null;
-
-		for (int i = 0; i < previewPanel.getPreviewTable().getColumnCount(); i++) {
-			curValue = previewPanel.getPreviewTable().getColumnModel()
-					.getColumn(i).getHeaderValue();
-
-			if (curValue != null) {
-				curModel.setValueAt(curValue.toString(), i, 1);
-			} else {
-				previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-						.setHeaderValue("");
-				curModel.setValueAt("", i, 1);
-			}
-		}
-
-		curTable.setModel(curModel);
-		aliasScrollPane.setViewportView(curTable);
-		aliasScrollPane.repaint();
-	}
-
-	private void initializeAliasTable(int rowCount, String[] columnNames) {
-		initializeAliasTable(rowCount, columnNames, -1);
-	}
-
-	private void initializeAliasTable(int rowCount, String[] columnNames,
-			int sheetIndex) {
-		Object[][] keyTableData = new Object[rowCount][keyTable.length];
-
-		AliasTableModel curModel = null;
-		String tabName;
-
-		if (sheetIndex == -1) {
-			tabName = previewPanel.getSelectedSheetName();
-		} else {
-			tabName = previewPanel.getSheetName(sheetIndex);
-		}
-
-		curModel = aliasTableModelMap.get(tabName);
-
-		curModel = new AliasTableModel();
-
-		Byte[] dataTypeArray = previewPanel.getDataTypes(tabName);
-
-		for (int i = 0; i < rowCount; i++) {
-			keyTableData[i][0] = new Boolean(false);
-
-			if (columnNames == null) {
-				keyTableData[i][1] = "Column " + (i + 1);
-			} else {
-				keyTableData[i][1] = columnNames[i];
-			}
-
-			if (dataTypeArray.length <= i) {
-				attributeDataTypes.add(CyAttributes.TYPE_STRING);
-			} else {
-				attributeDataTypes.add(dataTypeArray[i]);
-			}
-
-			keyTableData[i][2] = "String";
-		}
-
-		curModel = new AliasTableModel(keyTableData, keyTable);
-
-		aliasTableModelMap.put(tabName, curModel);
-
-		curModel.addTableModelListener(this);
-		/*
-		 * Set the list and combo box
-		 */
-		mappingAttributeComboBox.setEnabled(true);
-
-		JTable curTable = new JTable();
-		curTable.setModel(curModel);
-		aliasTableMap.put(tabName, curTable);
-
-		curTable.setDefaultRenderer(Object.class, new AliasTableRenderer(
-				attributeDataTypes, primaryKeyComboBox.getSelectedIndex()));
-		curTable.setEnabled(true);
-		curTable.setSelectionBackground(Color.white);
-		curTable.getTableHeader().setReorderingAllowed(false);
-
-		curTable.getColumnModel().getColumn(0).setPreferredWidth(55);
-		curTable.getColumnModel().getColumn(1).setPreferredWidth(300);
-		curTable.getColumnModel().getColumn(2).setPreferredWidth(100);
-
-		aliasScrollPane.setViewportView(curTable);
-		repaint();
-	}
-
 	private void updateMappingAttributeComboBox() {
 		mappingAttributeComboBox.removeAllItems();
 
@@ -1912,26 +1753,6 @@ public class ImportTextTableDialog extends JDialog implements
 		TaskManager.executeTask(task, jTaskConfig);
 	}
 
-	private void loadNetwork(final String networkName,
-			final GraphReader reader, final URL source, boolean multi) {
-		// Create LoadNetwork Task
-		ImportNetworkTask task = new ImportNetworkTask(reader, source);
-
-		// Configure JTask Dialog Pop-Up Box
-		JTaskConfig jTaskConfig = new JTaskConfig();
-		jTaskConfig.setOwner(Cytoscape.getDesktop());
-		jTaskConfig.displayCloseButton(true);
-		jTaskConfig.displayStatus(true);
-
-		if (multi)
-			jTaskConfig.setAutoDispose(true);
-		else
-			jTaskConfig.setAutoDispose(false);
-
-		// Execute Task in New Thread; pops open JTask Dialog Box.
-		TaskManager.executeTask(task, jTaskConfig);
-	}
-
 	private void setStatusBar(String message1, String message2, String message3) {
 		statusBar.setLeftLabel(message1);
 		statusBar.setCenterLabel(message2);
@@ -1989,7 +1810,6 @@ public class ImportTextTableDialog extends JDialog implements
 	private boolean checkDataSourceError() {
 		/*
 		 * Number of ENABLED columns should be 2 or more.
-		 * 
 		 */
 		final JTable table = previewPanel.getPreviewTable();
 
@@ -2014,7 +1834,6 @@ public class ImportTextTableDialog extends JDialog implements
 	 * Layout Information for the entire dialog.<br>
 	 * 
 	 * <p> This layout will be switched by dialog type parameter. </p>
-	 * 
 	 */
 	private void globalLayout() {
 		GroupLayout layout = new GroupLayout(getContentPane());

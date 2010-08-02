@@ -84,13 +84,6 @@ public interface MappingParameter {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public List<Integer> getAliasIndexList();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String[] getAttributeNames();
 
 	/**

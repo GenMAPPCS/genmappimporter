@@ -79,7 +79,6 @@ public class AttributeLineParser {
 		// map attributes
 		for (int i = 0; i < partsLen; i++) {
 			if ((i != amp.getKeyIndex())
-					&& !amp.getAliasIndexList().contains(i)
 					&& amp.getImportFlag()[i]) {
 				if (parts[i] == null) {
 					continue;
