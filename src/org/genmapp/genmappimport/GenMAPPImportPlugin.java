@@ -44,25 +44,8 @@ public class GenMAPPImportPlugin extends CytoscapePlugin {
 		// Register each menu item
 		Cytoscape.getDesktop().getCyMenus().addAction(impAttTableAction, 5);
 
-		// register CyCommand
-		CyCommandNamespace ns = CyCommandManager
-				.reserveNamespace(GenMAPPImportCyCommandHandler.NAMESPACE);
-		CyCommandManager.register(ns,
-				GenMAPPImportCyCommandHandler.CREATE_NETWORK,
-				new GenMAPPImportCyCommandHandler());
-		//
-		// // register cycommands
-		// try {
-		// // You must reserve your namespace first
-		// CyCommandNamespace ns = CyCommandManager
-		// .reserveNamespace("genmapp import");
-		// // Now register this handler as handling "open"
-		// GenMAPPImportCyCommandHandler oh = new
-		// GenMAPPImportCyCommandHandler();
-		// } catch (RuntimeException e) {
-		// // Handle already registered exceptions
-		// System.out.println(e);
-		// }
+		// CyCommands
+		new GenMAPPImportCyCommandHandler();
 
 	}
 

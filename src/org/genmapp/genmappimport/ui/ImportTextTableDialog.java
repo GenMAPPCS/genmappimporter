@@ -75,6 +75,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
 import org.genmapp.genmappimport.reader.AttributeMappingParameters;
 import org.genmapp.genmappimport.reader.DefaultAttributeTableReader;
 import org.genmapp.genmappimport.reader.ExcelAttributeSheetReader;
@@ -1028,6 +1029,7 @@ public class ImportTextTableDialog extends JDialog implements
 
 		// Extract URL from the text table.
 		final URL source = new URL(targetDataSourceTextField.getText());
+		GenMAPPImportCyCommandHandler.IMPORT_SOURCE_URL = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
 
