@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
 
@@ -56,8 +58,8 @@ public class AttributeLineParser {
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
 		final int partsLen = parts.length;
 
-		// Create new nodes when necessary
-		Node n = Cytoscape.getCyNode(primaryKey, true);
+		// Create new nodes when necessary and dependent on toggle
+		Node n = Cytoscape.getCyNode(primaryKey, GenMAPPImportCyCommandHandler.CREATE_NETWORK_TOGGLE);
 		buildNodeList(n.getRootGraphIndex());
 
 		// map attributes

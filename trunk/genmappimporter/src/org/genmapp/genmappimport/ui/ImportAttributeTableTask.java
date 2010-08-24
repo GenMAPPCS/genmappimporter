@@ -17,6 +17,7 @@ package org.genmapp.genmappimport.ui;
 
 import java.io.File;
 
+import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
 import org.genmapp.genmappimport.reader.TextTableReader;
 
 import cytoscape.Cytoscape;
@@ -61,12 +62,15 @@ public class ImportAttributeTableTask implements Task {
 			e.printStackTrace();
 			taskMonitor.setException(e, "Unable to import data.");
 		}
-		// Create network from all loaded nodes and edges
-		File tempFile = new File(source);
-		String t = tempFile.getName();
-		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
-		Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape.getRootGraph().getEdgeIndicesArray(), title);
-		Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
+		// Create network from all loaded nodes and edges, if toggle
+		if (GenMAPPImportCyCommandHandler.CREATE_NETWORK_TOGGLE) {
+			File tempFile = new File(source);
+			String t = tempFile.getName();
+			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+			Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape
+					.getRootGraph().getEdgeIndicesArray(), title);
+			Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
+		}
 
 		informUserOfAnnotationStats();
 	}

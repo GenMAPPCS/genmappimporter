@@ -42,15 +42,11 @@ public class GenMAPPImportCyCommandHandler implements CyCommandHandler {
 
 	public GenMAPPImportCyCommandHandler() {
 		Tunable t = new Tunable("toggle",
-				"Whether to create a network from imported GEO sample",
+				"Whether to create a network from imported table data",
 				Tunable.STRING, "false");
 		List<Tunable> list = new ArrayList<Tunable>();
 		list.add(t);
 		settings.put(CREATE_NETWORK, list);
-	}
-
-	public String getHandlerName() {
-		return "open";
 	}
 
 	public CyCommandResult execute(String string, Collection<Tunable> clctn)
