@@ -63,7 +63,7 @@ public class ImportAttributeTableTask implements Task {
 			taskMonitor.setException(e, "Unable to import data.");
 		}
 		// Create network from all loaded nodes and edges, if toggle
-		if (GenMAPPImportCyCommandHandler.CREATE_NETWORK_TOGGLE) {
+		if (GenMAPPImportCyCommandHandler.createNetworkToggle) {
 			File tempFile = new File(source);
 			String t = tempFile.getName();
 			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);

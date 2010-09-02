@@ -59,7 +59,7 @@ public class AttributeLineParser {
 		final int partsLen = parts.length;
 
 		// Create new nodes when necessary and dependent on toggle
-		Node n = Cytoscape.getCyNode(primaryKey, GenMAPPImportCyCommandHandler.CREATE_NETWORK_TOGGLE);
+		Node n = Cytoscape.getCyNode(primaryKey, GenMAPPImportCyCommandHandler.createNetworkToggle);
 		buildNodeList(n.getRootGraphIndex());
 
 		// map attributes

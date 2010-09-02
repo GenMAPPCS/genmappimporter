@@ -15,7 +15,10 @@
  ******************************************************************************/
 package org.genmapp.genmappimport.commands;
 
+import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cytoscape.command.AbstractCommandHandler;
@@ -33,10 +36,25 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	public final static String NAMESPACE = "genmapp importer";
 	public final static String CREATE_NETWORK = "create network";
 	public final static String ARG_CREATE_NETWORK = "toggle";
-	public final static String IMPORT_SOURCE = "get source";
+	public final static String GET_SOURCE = "get source";
 
-	public static boolean CREATE_NETWORK_TOGGLE = false;
-	public static String IMPORT_SOURCE_URL = null;
+	public final static String GET_IMPORTED = "get imported";
+	public final static String ARG_SOURCE = "source";
+	public final static String ARG_DEL = "delimiter";
+	public final static String ARG_LIST_DEL = "list delimiter";
+	public final static String ARG_KEY = "key in file";
+	public final static String ARG_ATTR_NAMES = "attribute names";
+	public final static String ARG_ATTR_TYPES = "attribute types";
+	public final static String ARG_LIST_TYPES = "list data types";
+	public final static String ARG_FLAGS = "import flags";
+	public final static String ARG_START_LINE = "start line number";
+
+	public final static String IMPORT = "import";
+
+	public static boolean createNetworkToggle = false;
+	public static String importSourceUrl = null;
+
+	public static Map<String, Object> importArgs = new HashMap<String, Object>();
 
 	public GenMAPPImportCyCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
@@ -45,8 +63,20 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				"Set toggle to create network and view from imported table data");
 		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
 
-		addDescription(IMPORT_SOURCE, "get URL for imported table");
-		addArgument(IMPORT_SOURCE);
+		addDescription(GET_SOURCE, "get URL for imported table");
+		addArgument(GET_SOURCE);
+
+		addDescription(GET_IMPORTED, "get all Reader Args for imported table");
+		addArgument(GET_IMPORTED, ARG_SOURCE);
+		addArgument(GET_IMPORTED, ARG_DEL);
+		addArgument(GET_IMPORTED, ARG_LIST_DEL);
+		addArgument(GET_IMPORTED, ARG_KEY);
+		addArgument(GET_IMPORTED, ARG_ATTR_NAMES);
+		addArgument(GET_IMPORTED, ARG_ATTR_TYPES);
+		addArgument(GET_IMPORTED, ARG_LIST_TYPES);
+		addArgument(GET_IMPORTED, ARG_FLAGS);
+		addArgument(GET_IMPORTED, ARG_START_LINE);
+
 	}
 
 	public CyCommandResult execute(String command, Collection<Tunable> args)
@@ -64,14 +94,82 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 		if (CREATE_NETWORK.equals(command)) {
 			boolean val = Boolean.parseBoolean((String) args
 					.get(ARG_CREATE_NETWORK));
-			CREATE_NETWORK_TOGGLE = val;
-		} else if (IMPORT_SOURCE.equals(command)) {
-			result.addResult(IMPORT_SOURCE_URL);
-			result.addMessage("returning URL: " + IMPORT_SOURCE_URL);
+			createNetworkToggle = val;
+		} else if (GET_SOURCE.equals(command)) {
+			result.addResult(importSourceUrl);
+			result.addMessage("returning URL: " + importSourceUrl);
+		} else if (GET_IMPORTED.equals(command)) {
+			for (String t : importArgs.keySet()) {
+				Object o = importArgs.get(t);
+				String s = "[";
+				result.addResult(t, o);
+				if (null == o) {
+					s = "null";
+				} else if (o instanceof String[]) {
+					String[] so = (String[]) o;
+					for (String st : so) {
+						s += st + ",";
+					}
+				} else if (o instanceof Byte[]) {
+					System.out.println("Byte[]: " + o);
+					Byte[] bo = (Byte[]) o;
+					for (Byte b : bo) {
+						if (null == b) {
+							s += "null,";
+						} else {
+							s += b.toString() + ",";
+						}
+					}
+				} else if (o instanceof boolean[]) {
+					boolean[] bo = (boolean[]) o;
+					for (boolean b : bo) {
+						Boolean bb = ((Boolean) b);
+						s += bb.toString() + ",";
+					}
+				} else {
+					s = o.toString();
+				}
+				// finish off list strings
+				if (s.startsWith("[")) {
+					s = s.substring(0, s.length() - 1);
+					s += "]";
+				}
+				result.addMessage("Arg: " + t + " = " + s);
+			}
+
 		} else {
+
 			result.addError("Command not supported: " + command);
 		}
 		return (result);
 	}
-}
 
+	/**
+	 * Transform import args to Strings and store for CyCommandHandler
+	 * 
+	 * @param source
+	 * @param del
+	 * @param listDel
+	 * @param key
+	 * @param attrNames
+	 * @param attrTypes
+	 * @param listTypes
+	 * @param flags
+	 * @param startLine
+	 */
+	public static void setImportArgs(URL source, List<String> del,
+			String listDel, int key, String[] attrNames, Byte[] attrTypes,
+			Byte[] listTypes, boolean[] flags, int startLine) {
+
+		importArgs.put(ARG_SOURCE, source);
+		importArgs.put(ARG_DEL, del);
+		importArgs.put(ARG_LIST_DEL, listDel);
+		importArgs.put(ARG_KEY, (Integer) key);
+		importArgs.put(ARG_ATTR_NAMES, attrNames);
+		importArgs.put(ARG_ATTR_TYPES, attrTypes);
+		importArgs.put(ARG_LIST_TYPES, listTypes);
+		importArgs.put(ARG_FLAGS, flags);
+		importArgs.put(ARG_START_LINE, (Integer) startLine);
+
+	}
+}
