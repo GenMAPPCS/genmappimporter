@@ -85,6 +85,8 @@ import org.jdesktop.layout.GroupLayout;
 
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
+import cytoscape.layout.LayoutProperties;
+import cytoscape.layout.Tunable;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.util.CyFileFilter;
@@ -97,8 +99,9 @@ import cytoscape.util.swing.JStatusBar;
  * 
  */
 @SuppressWarnings("serial")
-public class ImportTextTableDialog extends JDialog implements
-		PropertyChangeListener {
+public class ImportTextTableDialog extends JDialog
+		implements
+			PropertyChangeListener {
 	/**
 	 * This dialog GUI will be switched based on the following parameters:
 	 * 
@@ -129,8 +132,8 @@ public class ImportTextTableDialog extends JDialog implements
 
 	public static final String NETWORK_IMPORT_TEMPLATE_CHANGED = "networkImportTemplateChanged";
 
-	private static final String[] keyTable = { "Alias?",
-			"Column (Attribute Name)", "Data Type" };
+	private static final String[] keyTable = {"Alias?",
+			"Column (Attribute Name)", "Data Type"};
 
 	private static final String ID = "ID";
 
@@ -165,7 +168,7 @@ public class ImportTextTableDialog extends JDialog implements
 
 	private String listDelimiter;
 
-	private boolean[] importFlag;
+	private boolean[] importFlags;
 
 	private CyAttributes selectedAttributes;
 
@@ -966,10 +969,10 @@ public class ImportTextTableDialog extends JDialog implements
 		 */
 		final int colCount = previewPanel.getPreviewTable().getColumnModel()
 				.getColumnCount();
-		importFlag = new boolean[colCount];
+		importFlags = new boolean[colCount];
 
 		for (int i = 0; i < colCount; i++) {
-			importFlag[i] = ((AttributePreviewTableCellRenderer) previewPanel
+			importFlags[i] = ((AttributePreviewTableCellRenderer) previewPanel
 					.getPreviewTable().getCellRenderer(0, i)).getImportFlag(i);
 			// System.out.println("col"+i+": "+importFlag[i]);
 		}
@@ -997,7 +1000,7 @@ public class ImportTextTableDialog extends JDialog implements
 					}
 				}
 
-				if (importFlag[i] && importFlag[dupIndex]) {
+				if (importFlags[i] && importFlags[dupIndex]) {
 					final JLabel label = new JLabel(
 							"Duplicate Attribute Name Found: " + curName);
 					label.setForeground(Color.RED);
@@ -1029,23 +1032,54 @@ public class ImportTextTableDialog extends JDialog implements
 
 		// Extract URL from the text table.
 		final URL source = new URL(targetDataSourceTextField.getText());
-		GenMAPPImportCyCommandHandler.IMPORT_SOURCE_URL = source.toString();
+		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
+
+		List<String> del = new ArrayList<String>();
+		if (previewPanel.isCytoscapeAttributeFile(source)) {
+			del.add(" += +");
+		} else {
+			del = checkDelimiter();
+		}
+
+		GenMAPPImportCyCommandHandler.setImportArgs(source, del, listDelimiter, keyInFile,
+				attributeNames, attributeTypes, listDataTypes, importFlags,
+				startLineNumber);
+
+		doImport(source, del, listDelimiter, keyInFile, attributeNames,
+				attributeTypes, listDataTypes, importFlags, startLineNumber);
+
+		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
+
+		dispose();
+	}
+
+
+	/**
+	 * Isolated Import step to be called indirectly by CyCommands as well as by
+	 * internal code.
+	 * 
+	 * @param source
+	 * @param del
+	 * @param listDel
+	 * @param key
+	 * @param attrNames
+	 * @param attrTypes
+	 * @param listTypes
+	 * @param flags
+	 * @param startLine
+	 * @throws Exception
+	 */
+	public void doImport(URL source, List<String> del, String listDel, int key,
+			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
+			boolean[] flags, int startLine) throws Exception {
 
 		// Build mapping parameter object.
 		final AttributeMappingParameters mapping;
 
-		if (previewPanel.isCytoscapeAttributeFile(source)) {
-			List<String> del = new ArrayList<String>();
-			del.add(" += +");
-			mapping = new AttributeMappingParameters(del, listDelimiter,
-					keyInFile, attributeNames, attributeTypes, listDataTypes,
-					importFlag);
-		} else
-			mapping = new AttributeMappingParameters(checkDelimiter(),
-					listDelimiter, keyInFile, attributeNames, attributeTypes,
-					listDataTypes, importFlag);
+		mapping = new AttributeMappingParameters(del, listDel, key, attrNames,
+				attrTypes, listTypes, flags);
 
 		if (source.toString().endsWith(EXCEL_EXT)) {
 			/*
@@ -1059,24 +1093,21 @@ public class ImportTextTableDialog extends JDialog implements
 				HSSFSheet sheet = wb.getSheetAt(i);
 
 				loadAnnotation(new ExcelAttributeSheetReader(sheet, mapping,
-						startLineNumber), source.toString());
+						startLine), source.toString());
 
 			}
 		} else {
 			loadAnnotation(new DefaultAttributeTableReader(source, mapping,
-					startLineNumber, null), source.toString());
+					startLine, null), source.toString());
 
 		}
 
-		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
-
-		dispose();
 	}
 
 	private void selectAttributeFileButtonActionPerformed(ActionEvent evt)
 			throws IOException {
 		final File[] multiSource = FileUtil.getFiles("Select local file",
-				FileUtil.LOAD, new CyFileFilter[] {});
+				FileUtil.LOAD, new CyFileFilter[]{});
 
 		if ((multiSource == null) || (multiSource[0] == null))
 			return;
@@ -1350,10 +1381,10 @@ public class ImportTextTableDialog extends JDialog implements
 
 		// Initialize import flags.
 		final int colSize = previewPanel.getPreviewTable().getColumnCount();
-		importFlag = new boolean[colSize];
+		importFlags = new boolean[colSize];
 
 		for (int i = 0; i < colSize; i++) {
-			importFlag[i] = true;
+			importFlags[i] = true;
 		}
 
 		listDataTypes = previewPanel.getCurrentListDataTypes();
@@ -1467,43 +1498,43 @@ public class ImportTextTableDialog extends JDialog implements
 				value = attrIt.next();
 
 				switch (attrType) {
-				case CyAttributes.TYPE_STRING:
-					stringValue = selectedAttributes.getStringAttribute(
-							(String) value, selectedKeyAttribute);
-					valueSet.add(stringValue);
+					case CyAttributes.TYPE_STRING :
+						stringValue = selectedAttributes.getStringAttribute(
+								(String) value, selectedKeyAttribute);
+						valueSet.add(stringValue);
 
-					break;
+						break;
 
-				case CyAttributes.TYPE_FLOATING:
-					dblValue = selectedAttributes.getDoubleAttribute(
-							(String) value, selectedKeyAttribute);
-					valueSet.add(dblValue);
+					case CyAttributes.TYPE_FLOATING :
+						dblValue = selectedAttributes.getDoubleAttribute(
+								(String) value, selectedKeyAttribute);
+						valueSet.add(dblValue);
 
-					break;
+						break;
 
-				case CyAttributes.TYPE_INTEGER:
-					intValue = selectedAttributes.getIntegerAttribute(
-							(String) value, selectedKeyAttribute);
-					valueSet.add(intValue);
+					case CyAttributes.TYPE_INTEGER :
+						intValue = selectedAttributes.getIntegerAttribute(
+								(String) value, selectedKeyAttribute);
+						valueSet.add(intValue);
 
-					break;
+						break;
 
-				case CyAttributes.TYPE_BOOLEAN:
-					boolValue = selectedAttributes.getBooleanAttribute(
-							(String) value, selectedKeyAttribute);
-					valueSet.add(boolValue);
+					case CyAttributes.TYPE_BOOLEAN :
+						boolValue = selectedAttributes.getBooleanAttribute(
+								(String) value, selectedKeyAttribute);
+						valueSet.add(boolValue);
 
-					break;
+						break;
 
-				case CyAttributes.TYPE_SIMPLE_LIST:
-					listValue = selectedAttributes.getListAttribute(
-							(String) value, selectedKeyAttribute);
-					valueSet.addAll(listValue);
+					case CyAttributes.TYPE_SIMPLE_LIST :
+						listValue = selectedAttributes.getListAttribute(
+								(String) value, selectedKeyAttribute);
+						valueSet.addAll(listValue);
 
-					break;
+						break;
 
-				default:
-					break;
+					default :
+						break;
 				}
 			}
 		}
@@ -1549,7 +1580,7 @@ public class ImportTextTableDialog extends JDialog implements
 	private TableCellRenderer getRenderer(FileTypes type) {
 		final TableCellRenderer rend;
 
-		rend = new AttributePreviewTableCellRenderer(keyInFile, importFlag,
+		rend = new AttributePreviewTableCellRenderer(keyInFile, importFlags,
 				listDelimiter);
 
 		return rend;
@@ -1967,4 +1998,3 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		return this;
 	}
 }
-
