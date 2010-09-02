@@ -137,7 +137,7 @@ public class ImportTextTableDialog extends JDialog
 
 	private static final String ID = "ID";
 
-	private static final String EXCEL_EXT = ".xls";
+	public static final String EXCEL_EXT = ".xls";
 
 	// Key column index
 	private int keyInFile;
@@ -1047,7 +1047,7 @@ public class ImportTextTableDialog extends JDialog
 				attributeNames, attributeTypes, listDataTypes, importFlags,
 				startLineNumber);
 
-		doImport(source, del, listDelimiter, keyInFile, attributeNames,
+		GenMAPPImportCyCommandHandler.doImport(source, del, listDelimiter, keyInFile, attributeNames,
 				attributeTypes, listDataTypes, importFlags, startLineNumber);
 
 		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
@@ -1056,53 +1056,6 @@ public class ImportTextTableDialog extends JDialog
 	}
 
 
-	/**
-	 * Isolated Import step to be called indirectly by CyCommands as well as by
-	 * internal code.
-	 * 
-	 * @param source
-	 * @param del
-	 * @param listDel
-	 * @param key
-	 * @param attrNames
-	 * @param attrTypes
-	 * @param listTypes
-	 * @param flags
-	 * @param startLine
-	 * @throws Exception
-	 */
-	public void doImport(URL source, List<String> del, String listDel, int key,
-			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
-			boolean[] flags, int startLine) throws Exception {
-
-		// Build mapping parameter object.
-		final AttributeMappingParameters mapping;
-
-		mapping = new AttributeMappingParameters(del, listDel, key, attrNames,
-				attrTypes, listTypes, flags);
-
-		if (source.toString().endsWith(EXCEL_EXT)) {
-			/*
-			 * Read one sheet at a time
-			 */
-			POIFSFileSystem excelIn = new POIFSFileSystem(source.openStream());
-			HSSFWorkbook wb = new HSSFWorkbook(excelIn);
-
-			// Load all sheets in the table
-			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-				HSSFSheet sheet = wb.getSheetAt(i);
-
-				loadAnnotation(new ExcelAttributeSheetReader(sheet, mapping,
-						startLine), source.toString());
-
-			}
-		} else {
-			loadAnnotation(new DefaultAttributeTableReader(source, mapping,
-					startLine, null), source.toString());
-
-		}
-
-	}
 
 	private void selectAttributeFileButtonActionPerformed(ActionEvent evt)
 			throws IOException {
@@ -1586,28 +1539,6 @@ public class ImportTextTableDialog extends JDialog
 		return rend;
 	}
 
-	/**
-	 * Create task for annotation reader and run it. tablechanged
-	 * 
-	 * @param reader
-	 * @param ontology
-	 * @param source
-	 */
-	private void loadAnnotation(TextTableReader reader, String source) {
-		// Create LoadNetwork Task
-		ImportAttributeTableTask task = new ImportAttributeTableTask(reader,
-				source);
-
-		// Configure JTask Dialog Pop-Up Box
-		JTaskConfig jTaskConfig = new JTaskConfig();
-		jTaskConfig.setOwner(Cytoscape.getDesktop());
-		jTaskConfig.displayCloseButton(true);
-		jTaskConfig.displayStatus(true);
-		jTaskConfig.setAutoDispose(false);
-
-		// Execute Task in New Thread; pops open JTask Dialog Box.
-		TaskManager.executeTask(task, jTaskConfig);
-	}
 
 	private void setStatusBar(String message1, String message2, String message3) {
 		statusBar.setLeftLabel(message1);
