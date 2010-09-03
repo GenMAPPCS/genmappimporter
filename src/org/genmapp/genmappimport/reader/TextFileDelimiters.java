@@ -25,10 +25,9 @@ public enum TextFileDelimiters {
 	COMMA(","),
 	SEMICOLON(";"),
 	SPACE(" "),
-	PIPE("\\|"),
+	PIPE("|"),
 	COLON(":"),
-	SLASH("/"),
-	BACKSLASH("\\");
+	SLASH("/");
 
 	private String delimiter;
 

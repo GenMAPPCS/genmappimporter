@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -137,7 +138,6 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 						s += st + ",";
 					}
 				} else if (o instanceof Byte[]) {
-					System.out.println("Byte[]: " + o);
 					Byte[] bo = (Byte[]) o;
 					for (Byte b : bo) {
 						if (null == b) {
@@ -193,22 +193,22 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				del = (List<String>) d;
 			} else if (d instanceof String) {
 				del = new ArrayList<String>();
+				// escape the escape characters
+				d = ((String) d).replaceAll("\t", "\\\\t");
 				// remove brackets
 				d = ((String) d).substring(1, ((String) d).length() - 1);
 				// parse at commma delimiters
 				String[] list = ((String) d).split(",");
-				if (null == list) { // single item
-					del.add((String) d);
-				} else {
-					for (String item : list) {
-						del.add(item);
-					}
+				for (String item : list) {
+					del.add(item);
 				}
 			} else {
 				del = null;
 			}
 			Object ld = getArg(command, ARG_LIST_DEL, args);
 			if (ld instanceof String) {
+				// escape the escape characters
+				ld = ((String) ld).replaceAll("\t", "\\\\t");
 				listDel = (String) ld;
 			} else {
 				listDel = null;
@@ -218,11 +218,9 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				key = (Integer) k;
 			} else if (k instanceof String) {
 				if (((String) k).matches("\\d+")) {
-					System.out.println("regex for digit match successful");
 					key = new Integer((String) k);
 				}
 			} else {
-				System.out.println("Regex for digit match failed!!!");
 				key = 0;
 			}
 			Object an = getArg(command, ARG_ATTR_NAMES, args);
@@ -233,9 +231,6 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				an = ((String) an).substring(1, ((String) an).length() - 1);
 				// parse at commma delimiters
 				attrNames = ((String) an).split(",");
-				if (null == attrNames) { // single item
-					attrNames[0] = (String) an;
-				}
 			} else {
 				attrNames = null;
 			}
@@ -247,17 +242,12 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				at = ((String) at).substring(1, ((String) at).length() - 1);
 				// parse at commma delimiters
 				String[] list = ((String) at).split(",");
-				if (null == list) { // single item
-					attrTypes = new Byte[1];
-					attrTypes[0] = new Byte((String) at);
-				} else {
-					List<Byte> temp = new ArrayList<Byte>();
-					for (String item : list) {
-						byte b = new Byte(item);
-						temp.add(b);
-					}
-					attrTypes = temp.toArray(new Byte[]{});
+				List<Byte> temp = new ArrayList<Byte>();
+				for (String item : list) {
+					byte b = new Byte(item);
+					temp.add(b);
 				}
+				attrTypes = temp.toArray(new Byte[]{});
 			} else {
 				attrTypes = null;
 			}
@@ -269,26 +259,18 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				lt = ((String) lt).substring(1, ((String) lt).length() - 1);
 				// parse at commma delimiters
 				String[] list = ((String) lt).split(",");
-				if (null == list) { // single item
-					listTypes = new Byte[1];
-					listTypes[0] = new Byte((String) lt);
-				} else {
-					List<Byte> temp = new ArrayList<Byte>();
-					for (String item : list) {
-						System.out.println("check1");
-						if (item.equals("null")) {
-							System.out.println("check2");
-							// TODO: fix this. now using a random default,
-							// though
-							// seems to result in null
-							temp.add((byte) 4);
-						} else {
-							byte b = new Byte(item);
-							temp.add(b);
-						}
+				List<Byte> temp = new ArrayList<Byte>();
+				for (String item : list) {
+					if (item.equals("null")) {
+						// TODO: fix this. now using a random default,
+						// though seems to result in null
+						temp.add((byte) 4);
+					} else {
+						byte b = new Byte(item);
+						temp.add(b);
 					}
-					listTypes = temp.toArray(new Byte[]{});
 				}
+				listTypes = temp.toArray(new Byte[]{});
 			} else {
 				listTypes = null;
 			}
@@ -300,16 +282,11 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				f = ((String) f).substring(1, ((String) f).length() - 1);
 				// parse at commma delimiters
 				String[] list = ((String) f).split(",");
-				if (null == list) { // single item
-					flags = new boolean[1];
-					flags[0] = Boolean.parseBoolean((String) f);
-				} else {
-					flags = new boolean[list.length];
-					int i = 0;
-					for (String item : list) {
-						boolean b = Boolean.parseBoolean(item);
-						flags[i] = b;
-					}
+				flags = new boolean[list.length];
+				int i = 0;
+				for (String item : list) {
+					boolean b = Boolean.parseBoolean(item);
+					flags[i] = b;
 				}
 			} else {
 				flags = null;
@@ -319,15 +296,15 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				startLine = (Integer) sl;
 			} else if (sl instanceof String) {
 				if (((String) sl).matches("\\d+")) {
-					System.out.println("regex for digit match successful");
 					startLine = new Integer((String) sl);
 				}
 			} else {
-				System.out.println("Regex for digit match failed!!!");
 				startLine = 0;
 			}
 
 			try {
+				setImportArgs(source, del, listDel, key, attrNames, attrTypes,
+						listTypes, flags, startLine);
 				doImport(source, del, listDel, key, attrNames, attrTypes,
 						listTypes, flags, startLine);
 			} catch (Exception e) {
