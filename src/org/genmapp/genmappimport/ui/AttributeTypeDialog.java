@@ -159,7 +159,6 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 		                                                                        "|",
 		                                                                        COLON.toString(),
 		                                                                        SLASH.toString(),
-		                                                                        BACKSLASH.toString(),
 		                                                                        COMMA.toString()
 		                                                                    }));
 		listDelimiterComboBox.setName("listDelimiterComboBox");
