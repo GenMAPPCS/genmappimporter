@@ -67,7 +67,7 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 
 	public final static String IMPORT = "import";
 
-	public static boolean createNetworkToggle = false;
+	public static boolean createNetworkToggle = true;
 	public static String importSourceUrl = null;
 
 	public static Map<String, Object> importArgs = new HashMap<String, Object>();
