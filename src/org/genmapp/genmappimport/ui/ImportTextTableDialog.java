@@ -66,29 +66,20 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.xml.bind.JAXBException;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
-import org.genmapp.genmappimport.reader.AttributeMappingParameters;
-import org.genmapp.genmappimport.reader.DefaultAttributeTableReader;
-import org.genmapp.genmappimport.reader.ExcelAttributeSheetReader;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
-import org.genmapp.genmappimport.reader.TextTableReader;
 import org.jdesktop.layout.GroupLayout;
 
 import cytoscape.Cytoscape;
+import cytoscape.CytoscapeInit;
+import cytoscape.command.CyCommandException;
+import cytoscape.command.CyCommandManager;
+import cytoscape.command.CyCommandResult;
 import cytoscape.data.CyAttributes;
-import cytoscape.layout.LayoutProperties;
-import cytoscape.layout.Tunable;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
 import cytoscape.util.CyFileFilter;
 import cytoscape.util.FileUtil;
 import cytoscape.util.swing.ColumnResizer;
@@ -141,6 +132,7 @@ public class ImportTextTableDialog extends JDialog
 
 	// Key column index
 	private int keyInFile;
+	private int keyType;
 
 	// Case sensitivity
 	private Boolean caseSensitive = false;
@@ -340,6 +332,18 @@ public class ImportTextTableDialog extends JDialog
 				primaryKeyComboBoxActionPerformed(evt);
 			}
 		});
+
+		primaryTypeLabel = new JLabel("type: ");
+		primaryTypeComboBox = new JComboBox();
+		primaryTypeComboBox.setEnabled(false);
+		primaryTypeComboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				primaryTypeComboBoxActionPerformed(evt);
+			}
+		});
+
+		// initialize via CyThesaurus
+		initializePrimaryTypeComboBox();
 
 		/*
 		 * Set tooltips options.
@@ -788,9 +792,12 @@ public class ImportTextTableDialog extends JDialog
 										.createSequentialGroup()
 										.addContainerGap()
 										.add(primaryLabel)
+										.add(primaryKeyComboBox, 0, 0,
+												Short.MAX_VALUE)
 										.addPreferredGap(
 												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(primaryKeyComboBox, 0, 0,
+										.add(primaryTypeLabel)
+										.add(primaryTypeComboBox, 0, 0,
 												Short.MAX_VALUE)
 										.addPreferredGap(
 												org.jdesktop.layout.LayoutStyle.RELATED)
@@ -813,6 +820,12 @@ public class ImportTextTableDialog extends JDialog
 														.add(primaryLabel)
 														.add(
 																primaryKeyComboBox,
+																GroupLayout.PREFERRED_SIZE,
+																GroupLayout.DEFAULT_SIZE,
+																GroupLayout.PREFERRED_SIZE)
+														.add(primaryTypeLabel)
+														.add(
+																primaryTypeComboBox,
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE)
@@ -839,8 +852,32 @@ public class ImportTextTableDialog extends JDialog
 	 * @param evt
 	 */
 	private void primaryKeyComboBoxActionPerformed(ActionEvent evt) {
+		// skip copies of calls to this method. It seems that the event is
+		// called in pairs.
+		// if (evt.getSource().toString().contains("disabled"))
+		// return;
+
 		// Update primary key index.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
+
+		// Update ID type display
+		Set<String> idTypes = previewPanel.guessIdType(keyInFile);
+		// TODO: just take first guess for now
+		String firstType = null;
+		if (null != idTypes) {
+			for (String t : idTypes) {
+				firstType = t;
+				break;
+			}
+		}
+
+		for (int i = 0; i < primaryTypeComboBox.getItemCount(); i++) {
+//			System.out.println("i: " + i + ":"
+//					+ primaryTypeComboBox.getItemAt(i) + "=" + firstType);
+			if (primaryTypeComboBox.getItemAt(i).equals(firstType)) {
+				primaryTypeComboBox.setSelectedIndex(i);
+			}
+		}
 
 		// Update
 		previewPanel.getPreviewTable().setDefaultRenderer(Object.class,
@@ -862,6 +899,17 @@ public class ImportTextTableDialog extends JDialog
 		ColumnResizer.adjustColumnPreferredWidths(previewPanel
 				.getPreviewTable());
 		previewPanel.getPreviewTable().repaint();
+	}
+
+	/**
+	 * Update UI based on the primary type selection.
+	 * 
+	 * @param evt
+	 */
+	private void primaryTypeComboBoxActionPerformed(ActionEvent evt) {
+		// Update primary type index.
+		keyType = primaryTypeComboBox.getSelectedIndex();
+
 	}
 
 	private void helpButtonActionPerformed(ActionEvent evt) {
@@ -1035,6 +1083,7 @@ public class ImportTextTableDialog extends JDialog
 		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
+		keyType = primaryTypeComboBox.getSelectedIndex();
 
 		List<String> del = new ArrayList<String>();
 		if (previewPanel.isCytoscapeAttributeFile(source)) {
@@ -1043,19 +1092,18 @@ public class ImportTextTableDialog extends JDialog
 			del = checkDelimiter();
 		}
 
-		GenMAPPImportCyCommandHandler.setImportArgs(source, del, listDelimiter, keyInFile,
-				attributeNames, attributeTypes, listDataTypes, importFlags,
-				startLineNumber);
+		GenMAPPImportCyCommandHandler.setImportArgs(source, del, listDelimiter,
+				keyInFile, attributeNames, attributeTypes, listDataTypes,
+				importFlags, startLineNumber);
 
-		GenMAPPImportCyCommandHandler.doImport(source, del, listDelimiter, keyInFile, attributeNames,
-				attributeTypes, listDataTypes, importFlags, startLineNumber);
+		GenMAPPImportCyCommandHandler.doImport(source, del, listDelimiter,
+				keyInFile, attributeNames, attributeTypes, listDataTypes,
+				importFlags, startLineNumber);
 
 		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
 
 		dispose();
 	}
-
-
 
 	private void selectAttributeFileButtonActionPerformed(ActionEvent evt)
 			throws IOException {
@@ -1249,6 +1297,68 @@ public class ImportTextTableDialog extends JDialog
 		} else {
 			primaryKeyComboBox.setSelectedIndex(selectedIndex);
 		}
+
+	}
+
+	/**
+	 * 
+	 */
+	public void initializePrimaryTypeComboBox() {
+		// Register resources with CyThesaurus
+		String species = CytoscapeInit.getProperties().getProperty(
+				"defaultSpeciesName");
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("classpath", "org.bridgedb.webservice.bridgerest.BridgeRest");
+		args
+				.put("connstring",
+						"idmapper-bridgerest:http://webservice.bridgedb.org/"
+								+ species);
+		args.put("displayname", "BridgeDb (http://webservice.bridgedb.org/"
+				+ species + ")");
+		try {
+			CyCommandResult result = CyCommandManager.execute("idmapping",
+					"register resource", args);
+			for (String re : result.getMessages())
+				System.out.println(re);
+			args.clear();
+			result = CyCommandManager.execute("idmapping", "list resources",
+					args);
+			for (String re : result.getMessages())
+				System.out.println(re);
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Map<String, Object> noargs = new HashMap<String, Object>();
+		CyCommandResult result = null;
+		try {
+			result = CyCommandManager.execute("idmapping",
+					"get source id types", noargs);
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (null != result) {
+			Set<String> idTypes = (Set<String>) result.getResult();
+			for (String type : idTypes) {
+				primaryTypeComboBox.addItem(type);
+			}
+			primaryTypeComboBox.setEnabled(true);
+		} else {
+			primaryTypeComboBox.removeAllItems();
+			primaryTypeComboBox.setEnabled(false);
+		}
+
+		primaryTypeComboBox.setSelectedIndex(0);
+
 	}
 
 	/**
@@ -1304,6 +1414,36 @@ public class ImportTextTableDialog extends JDialog
 	 * 
 	 * @throws IOException
 	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
+	/**
+	 * @param sourceURL
+	 * @param delimiters
+	 * @throws IOException
+	 */
 	private void readAnnotationForPreview(URL sourceURL, List<String> delimiters)
 			throws IOException {
 		/*
@@ -1350,9 +1490,7 @@ public class ImportTextTableDialog extends JDialog
 			switchDelimiterCheckBoxes(true);
 		}
 
-		/*
-		 * Set Status bar
-		 */
+		// Set Status bar
 		setStatusBar(sourceURL);
 
 		pack();
@@ -1538,7 +1676,6 @@ public class ImportTextTableDialog extends JDialog
 
 		return rend;
 	}
-
 
 	private void setStatusBar(String message1, String message2, String message3) {
 		statusBar.setLeftLabel(message1);
@@ -1843,7 +1980,11 @@ public class ImportTextTableDialog extends JDialog
 
 	private JComboBox primaryKeyComboBox;
 
+	private JComboBox primaryTypeComboBox;
+
 	private JLabel primaryLabel;
+
+	private JLabel primaryTypeLabel;
 
 	private javax.swing.JRadioButton showAllRadioButton;
 

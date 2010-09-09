@@ -70,6 +70,9 @@ import org.genmapp.genmappimport.ui.ImportTextTableDialog.FileTypes;
 import org.jdesktop.layout.GroupLayout;
 
 import cytoscape.Cytoscape;
+import cytoscape.command.CyCommandException;
+import cytoscape.command.CyCommandManager;
+import cytoscape.command.CyCommandResult;
 import cytoscape.data.CyAttributes;
 import cytoscape.util.URLUtil;
 import cytoscape.util.swing.ColumnResizer;
@@ -975,6 +978,35 @@ public class PreviewTablePanel extends JPanel {
 		dataTypeMap.put(tableName, dataType);
 	}
 
+	@SuppressWarnings("unchecked")
+	public Set<String> guessIdType(int targetColumn){
+		String sampleId = null; 
+		Set<String> idTypes;
+		TableModel curModel = getPreviewTable().getModel();
+		
+		try {
+			sampleId = (String) curModel.getValueAt(0, targetColumn);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("sourceid", sampleId);
+		try {
+			CyCommandResult result = CyCommandManager.execute("idmapping", "guess id type", args);
+			 idTypes = (Set<String>) result.getResult();
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		
+		return idTypes;
+	}
+	
 	/**
 	 * Not yet implemented.
 	 * <p>

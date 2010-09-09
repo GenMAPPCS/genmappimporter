@@ -15,12 +15,17 @@
  ******************************************************************************/
 package org.genmapp.genmappimport;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
 import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
 
 import cytoscape.Cytoscape;
+import cytoscape.CytoscapeInit;
+import cytoscape.command.CyCommandException;
 import cytoscape.command.CyCommandManager;
-import cytoscape.command.CyCommandNamespace;
+import cytoscape.command.CyCommandResult;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.util.CytoscapeAction;
 
@@ -46,7 +51,7 @@ public class GenMAPPImportPlugin extends CytoscapePlugin {
 
 		// CyCommands
 		new GenMAPPImportCyCommandHandler();
-
+		
 	}
 
 }
