@@ -36,6 +36,8 @@ public class AttributeMappingParameters {
 	private static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
 	private final int keyIndex;
+	private final String keyType;
+	private String secondaryKeyType;
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
@@ -54,6 +56,10 @@ public class AttributeMappingParameters {
 	 *            user-defined delimiters between list values
 	 * @param keyIndex
 	 *            ID column
+	 * @param keyType
+	 *            ID type
+	 * @param secKeyTypes
+	 *            secondary ID types for mapping
 	 * @param attrNames
 	 *            column headers
 	 * @param attributeTypes
@@ -74,7 +80,7 @@ public class AttributeMappingParameters {
 	 * @throws Exception
 	 */
 	public AttributeMappingParameters(final List<String> delimiters,
-			final String listDelimiter, final int keyIndex,
+			final String listDelimiter, final int keyIndex, final String keyType, final String secKeyType,
 			final String[] attrNames, Byte[] attributeTypes,
 			Byte[] listAttributeTypes, boolean[] importFlag)
 
@@ -95,6 +101,8 @@ public class AttributeMappingParameters {
 		 * These values should not be null!
 		 */
 		this.keyIndex = keyIndex;
+		this.keyType = keyType;
+		this.secondaryKeyType = secKeyType;
 		this.attributeNames = attrNames;
 
 		this.listAttributeTypes = listAttributeTypes;
@@ -208,6 +216,26 @@ public class AttributeMappingParameters {
 	public int getKeyIndex() {
 		// TODO Auto-generated method stub
 		return keyIndex;
+	}
+
+	/**
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
+	 */
+	public String getKeyType() {
+		// TODO Auto-generated method stub
+		return keyType;
+	}
+
+	/**
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
+	 */
+	public String getSecKeyType() {
+		// TODO Auto-generated method stub
+		return secondaryKeyType;
 	}
 
 	/**

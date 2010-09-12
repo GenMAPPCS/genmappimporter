@@ -51,6 +51,9 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	// Lines beginning with this character will be considered as comment lines.
 	private String commentChar = null;
 
+	// Lines beginning with this character will be considered as comment lines.
+	public String taskmonitorStatus = null;
+
 	/**
 	 * Creates a new DefaultAttributeTableReader object.
 	 * 
@@ -90,21 +93,68 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	}
 
 	/**
-	 * Read table from the data source.
+	 * Read table from the data source, first for identifier mapping.
 	 */
-	public void readTable() throws IOException {
-		final InputStream is = URLUtil.getInputStream(source);
-		final BufferedReader bufRd = new BufferedReader(new InputStreamReader(
-				is));
+	public void firstRead() throws IOException {
+		InputStream is = URLUtil.getInputStream(source);
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
 		String line;
 		int lineCount = 0;
 
-		/*
-		 * Read & extract one line at a time. The line can be Tab delimited,
-		 */
 		String[] parts = null;
 
 		final String delimiter = mapping.getDelimiterRegEx();
+
+		while ((line = bufRd.readLine()) != null) {
+			/*
+			 * Ignore Empty & Comment lines.
+			 */
+			if ((commentChar != null) && line.startsWith(commentChar)) {
+				// Do nothing
+			} else if ((lineCount >= startLineNumber)
+					&& (line.trim().length() > 0)) {
+				parts = line.split(delimiter);
+				// If key does not exists, ignore the line.
+				if (parts.length >= mapping.getKeyIndex() + 1) {
+					try {
+						parser.collectTableIds(parts);
+					} catch (Exception ex) {
+						System.out
+								.println("Couldn't parse row for id mapping: "
+										+ lineCount);
+					}
+					globalCounter++;
+				}
+			}
+
+			lineCount++;
+		}
+		is.close();
+		bufRd.close();
+		
+		// perform actual id mapping (can be slow via web services)
+		parser.collectTableMappings();
+		
+		//perform network id mappings (can be slow via web services)
+		parser.performNetworkMappings();
+	}
+		
+
+	/**
+	 * Read table from the data source, this time for attribute mapping.
+	 */
+	public void readTable() throws IOException {
+		InputStream is = URLUtil.getInputStream(source);
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
+		String line;
+		int lineCount = 0;
+
+		String[] parts = null;
+
+		final String delimiter = mapping.getDelimiterRegEx();
+
+		is = URLUtil.getInputStream(source);
+		bufRd = new BufferedReader(new InputStreamReader(is));
 		while ((line = bufRd.readLine()) != null) {
 			/*
 			 * Ignore Empty & Comment lines.
@@ -119,7 +169,9 @@ public class DefaultAttributeTableReader implements TextTableReader {
 					try {
 						parser.parseAll(parts);
 					} catch (Exception ex) {
-						System.out.println("Couldn't parse row: " + lineCount);
+						System.out
+								.println("Couldn't parse row for attribute mapping: "
+										+ lineCount);
 					}
 					globalCounter++;
 				}
