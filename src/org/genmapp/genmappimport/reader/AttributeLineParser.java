@@ -45,7 +45,7 @@ public class AttributeLineParser {
 	private List<Integer> nodeList = new ArrayList<Integer>();
 	private List<String> keyList = new ArrayList<String>();
 	private Map<String, Set<String>> primaryMap = new HashMap<String, Set<String>>();
-	private Map<String, Set<String>> secondaryMap = new HashMap<String, Set<String>>();
+//	private Map<String, Set<String>> secondaryMap = new HashMap<String, Set<String>>();
 
 	public static final String ID = "GeneID";
 	public static final String CODE = "SystemCode";
@@ -112,7 +112,10 @@ public class AttributeLineParser {
 							}
 							Cytoscape.getNetworkAttributes().setAttribute(
 									network.getIdentifier(), CODE, type);
-							if (!type.equals(amp.getSecKeyType())) {
+							// skip special cases, which will be mapped
+							// naturally
+							if (!type.equals(amp.getSecKeyType())
+									&& !type.equals(amp.getKeyType())) {
 								CyCommandResult result2 = mapIdentifiersByAttr(
 										network, type);
 							}
@@ -214,14 +217,14 @@ public class AttributeLineParser {
 					.getResult();
 			for (String primaryKey : keyMappings.keySet()) {
 				primaryMap.put(primaryKey, keyMappings.get(primaryKey));
-				for (String secondaryKey : keyMappings.get(primaryKey)) {
-					Set<String> tempSet = new HashSet<String>();
-					tempSet = secondaryMap.get(secondaryKey);
-					if (null == tempSet)
-						tempSet = new HashSet<String>();
-					tempSet.add(primaryKey);
-					secondaryMap.put(secondaryKey, tempSet);
-				}
+//				for (String secondaryKey : keyMappings.get(primaryKey)) {
+//					Set<String> tempSet = new HashSet<String>();
+//					tempSet = secondaryMap.get(secondaryKey);
+//					if (null == tempSet)
+//						tempSet = new HashSet<String>();
+//					tempSet.add(primaryKey);
+//					secondaryMap.put(secondaryKey, tempSet);
+//				}
 			}
 		}
 	}
@@ -309,6 +312,7 @@ public class AttributeLineParser {
 	 * @param parts
 	 *            fields in a row
 	 */
+	@SuppressWarnings("unchecked")
 	public void parseAll(String[] parts) {
 		// Get key
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
@@ -317,15 +321,13 @@ public class AttributeLineParser {
 		// First, check both primary and secondary keys in ID column
 		Node n = Cytoscape.getCyNode(primaryKey, false);
 		if (null != n) {
-			mapAttributes(amp.getKeyIndex(), primaryKey, amp.getKeyType(), amp
-					.getSecKeyType(), primaryMap, parts);
+			mapAttributes(amp.getKeyIndex(), primaryKey, parts);
 		}
 		if (secKeys != null) {
 			for (String secondaryKey : secKeys) {
 				n = Cytoscape.getCyNode(secondaryKey, false);
 				if (null != n) {
-					mapAttributes(-1, secondaryKey, amp.getSecKeyType(), amp
-							.getKeyType(), secondaryMap, parts);
+					mapAttributes(-1, secondaryKey, parts);
 				}
 			}
 
@@ -341,46 +343,50 @@ public class AttributeLineParser {
 						continue;
 					}
 					for (CyNode cn : (List<CyNode>) network.nodesList()) {
+						boolean didMap = false;
 						List<String> sk = (List<String>) Cytoscape
 								.getNodeAttributes().getListAttribute(
 										cn.getIdentifier(),
 										"__" + amp.getSecKeyType());
-						if (sk != null)
+						if (sk != null) {
 							if (sk.size() > 0) {
 								for (String secondaryKey : secKeys) {
 									if (sk.contains(secondaryKey)) {
-										final int partsLen = parts.length;
-										// map attributes
-										for (int i = 0; i < partsLen; i++) {
-											if (amp.getImportFlag()[i]) {
-												if (parts[i] == null) {
-													continue;
-												} else {
-													mapAttribute(cn
-															.getIdentifier(),
-															parts[i].trim(), i);
-												}
-											}
-										}
+										didMap = mapAttributes(-1, cn
+												.getIdentifier(), parts);
+										break; // skip remaining secKeys
 									}
 								}
+								if (didMap)
+									continue; // next node
 							}
+						}
+						// then check if primaryKey matches ID/CODE directly
+						String pk = Cytoscape.getNodeAttributes()
+								.getStringAttribute(cn.getIdentifier(), ID);
+						String pkt = Cytoscape.getNodeAttributes()
+								.getStringAttribute(cn.getIdentifier(), CODE);
+						if (pk != null && pkt != null) {
+							if (pkt.equals(amp.getKeyType())
+									&& pk.equals(primaryKey)) {
+								mapAttributes(amp.getKeyIndex(), cn
+										.getIdentifier(), parts);
 
+							}
+						}
 					}
 				}
 			}
 		}
+
 		// finally, we create nodes if a network requested
 		if (GenMAPPImportCyCommandHandler.createNetworkToggle) {
 			n = Cytoscape.getCyNode(primaryKey, true);
 			buildNodeList(n.getRootGraphIndex());
-			mapAttributes(amp.getKeyIndex(), primaryKey, amp.getKeyType(), amp
-					.getSecKeyType(), primaryMap, parts);
+			mapAttributes(amp.getKeyIndex(), primaryKey, parts);
 		}
 	}
-
-	private boolean mapAttributes(int skipIndex, String pkey, String ptype,
-			String stype, Map<String, Set<String>> map, String[] parts) {
+	private boolean mapAttributes(int skipIndex, String nkey, String[] parts) {
 
 		final int partsLen = parts.length;
 		// map attributes
@@ -389,29 +395,43 @@ public class AttributeLineParser {
 				if (parts[i] == null) {
 					continue;
 				} else {
-					mapAttribute(pkey, parts[i].trim(), i);
+					mapAttribute(nkey, parts[i].trim(), i);
 				}
 			}
 		}
-		// plus add primary and secondary as new attributes
+		// add primary key as new attribute
+		String pkey = parts[amp.getKeyIndex()].trim();
+		String ptype = amp.getKeyType();
+		List<String> plist = (List<String>) Cytoscape.getNodeAttributes()
+				.getListAttribute(nkey, "__" + ptype);
+		if (null == plist) {
+			plist = new ArrayList<String>();
+		}
+		if (!plist.contains(pkey)) {
+			plist.add(pkey);
+		}
 		try {
-			amp.getAttributes().setAttribute(pkey, "__" + ptype, pkey);
+			amp.getAttributes().setListAttribute(nkey, "__" + ptype, plist);
 		} catch (Exception e) {
-			invalid.put(pkey, pkey);
+			invalid.put(nkey, plist);
 		}
 
-		List<String> slist = new ArrayList<String>();
-		for (String skey : map.get(pkey)) {
-			slist.add(skey);
-		}
-		try {
-			amp.getAttributes().setListAttribute(pkey, "__" + stype, slist);
-		} catch (Exception e) {
-			invalid.put(pkey, slist);
+		// add secondary key as new attribute
+		// only applies to special cases where mapping has been skipped
+		if (pkey.equals(nkey) || primaryMap.get(pkey).contains(nkey)) {
+			String stype = amp.getSecKeyType();
+			List<String> slist = new ArrayList<String>();
+			for (String skey : primaryMap.get(pkey)) {
+				slist.add(skey);
+			}
+			try {
+				amp.getAttributes().setListAttribute(nkey, "__" + stype, slist);
+			} catch (Exception e) {
+				invalid.put(nkey, slist);
+			}
 		}
 		return true;
 	}
-
 	/**
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 * 
