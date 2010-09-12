@@ -18,8 +18,10 @@ package org.genmapp.genmappimport.ui;
 import java.io.File;
 
 import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+import org.genmapp.genmappimport.reader.AttributeLineParser;
 import org.genmapp.genmappimport.reader.TextTableReader;
 
+import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
@@ -31,7 +33,7 @@ import cytoscape.util.CyNetworkNaming;
 public class ImportAttributeTableTask implements Task {
 	private TextTableReader reader;
 	private String source;
-	private TaskMonitor taskMonitor;
+	public TaskMonitor taskMonitor;
 
 	/**
 	 * Constructor.
@@ -50,9 +52,21 @@ public class ImportAttributeTableTask implements Task {
 	 * Executes Task.
 	 */
 	public void run() {
-		taskMonitor.setStatus("Loading data...");
+		taskMonitor.setStatus("Interpreting identifiers...");
 		taskMonitor.setPercentCompleted(-1);
 
+		try {
+			reader.firstRead();
+			taskMonitor.setPercentCompleted(100);
+		} catch (Exception e) {
+			e.printStackTrace();
+			taskMonitor
+					.setException(e, "Unable to work with your identifiers.");
+		}
+
+		// Perform
+		taskMonitor.setStatus("Loading data...");
+		taskMonitor.setPercentCompleted(-1);
 		try {
 			reader.readTable();
 			taskMonitor.setPercentCompleted(100);
@@ -60,16 +74,18 @@ public class ImportAttributeTableTask implements Task {
 					null);
 		} catch (Exception e) {
 			e.printStackTrace();
-			taskMonitor.setException(e, "Unable to import data.");
+			taskMonitor.setException(e, "Unable to load your data.");
 		}
 		// Create network from all loaded nodes and edges, if toggle
 		if (GenMAPPImportCyCommandHandler.createNetworkToggle) {
 			File tempFile = new File(source);
 			String t = tempFile.getName();
 			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
-			Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape
+			CyNetwork network = Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape
 					.getRootGraph().getEdgeIndicesArray(), title);
 			Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
+			Cytoscape.getNetworkAttributes().setAttribute(network.getIdentifier(),
+					AttributeLineParser.CODE, AttributeLineParser.DATASET);
 		}
 
 		informUserOfAnnotationStats();

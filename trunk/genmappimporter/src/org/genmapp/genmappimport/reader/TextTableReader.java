@@ -30,6 +30,11 @@ public interface TextTableReader {
 	/**
 	 * @throws IOException
 	 */
+	public void firstRead() throws IOException;
+
+	/**
+	 * @throws IOException
+	 */
 	public void readTable() throws IOException;
 
 	/**

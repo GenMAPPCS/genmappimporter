@@ -132,7 +132,8 @@ public class ImportTextTableDialog extends JDialog
 
 	// Key column index
 	private int keyInFile;
-	private int keyType;
+	private String keyType;
+	private String secondaryKeyType;
 
 	// Case sensitivity
 	private Boolean caseSensitive = false;
@@ -908,8 +909,28 @@ public class ImportTextTableDialog extends JDialog
 	 */
 	private void primaryTypeComboBoxActionPerformed(ActionEvent evt) {
 		// Update primary type index.
-		keyType = primaryTypeComboBox.getSelectedIndex();
-
+		keyType = (String) primaryTypeComboBox.getItemAt(primaryTypeComboBox.getSelectedIndex());
+		
+		//TODO: identify secondary key type for mapping
+		Map<String, Object> noargs = new HashMap<String, Object>();
+		CyCommandResult result = null;
+		try {
+			result = CyCommandManager.execute("idmapping",
+					"get target id types", noargs);
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (null != result) {
+			Set<String> idTypes = (Set<String>) result.getResult();
+			for (String type : idTypes) {
+				if (type.contains("Ensembl"))
+					secondaryKeyType = type;
+			}
+		}
 	}
 
 	private void helpButtonActionPerformed(ActionEvent evt) {
@@ -1083,7 +1104,9 @@ public class ImportTextTableDialog extends JDialog
 		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
-		keyType = primaryTypeComboBox.getSelectedIndex();
+		
+		//REDUNDANT
+		//keyType = (String) primaryTypeComboBox.getItemAt(primaryTypeComboBox.getSelectedIndex());
 
 		List<String> del = new ArrayList<String>();
 		if (previewPanel.isCytoscapeAttributeFile(source)) {
@@ -1093,11 +1116,11 @@ public class ImportTextTableDialog extends JDialog
 		}
 
 		GenMAPPImportCyCommandHandler.setImportArgs(source, del, listDelimiter,
-				keyInFile, attributeNames, attributeTypes, listDataTypes,
+				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 				importFlags, startLineNumber);
 
 		GenMAPPImportCyCommandHandler.doImport(source, del, listDelimiter,
-				keyInFile, attributeNames, attributeTypes, listDataTypes,
+				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 				importFlags, startLineNumber);
 
 		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
@@ -1305,23 +1328,26 @@ public class ImportTextTableDialog extends JDialog
 	 */
 	public void initializePrimaryTypeComboBox() {
 		// Register resources with CyThesaurus
-		String species = CytoscapeInit.getProperties().getProperty(
-				"defaultSpeciesName");
+		// NOW DONE BY CYTHESAURUS DIRECTLY
+//		String species = CytoscapeInit.getProperties().getProperty(
+//				"defaultSpeciesName");
+//		Map<String, Object> args = new HashMap<String, Object>();
+//		args.put("classpath", "org.bridgedb.webservice.bridgerest.BridgeRest");
+//		args
+//				.put("connstring",
+//						"idmapper-bridgerest:http://webservice.bridgedb.org/"
+//								+ species);
+//		args.put("displayname", "BridgeDb (http://webservice.bridgedb.org/"
+//				+ species + ")");
+//		try {
+//			CyCommandResult result = CyCommandManager.execute("idmapping",
+//					"register resource", args);
+//			for (String re : result.getMessages())
+//				System.out.println(re);
+//			args.clear();
 		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("classpath", "org.bridgedb.webservice.bridgerest.BridgeRest");
-		args
-				.put("connstring",
-						"idmapper-bridgerest:http://webservice.bridgedb.org/"
-								+ species);
-		args.put("displayname", "BridgeDb (http://webservice.bridgedb.org/"
-				+ species + ")");
 		try {
-			CyCommandResult result = CyCommandManager.execute("idmapping",
-					"register resource", args);
-			for (String re : result.getMessages())
-				System.out.println(re);
-			args.clear();
-			result = CyCommandManager.execute("idmapping", "list resources",
+			CyCommandResult result = CyCommandManager.execute("idmapping", "list resources",
 					args);
 			for (String re : result.getMessages())
 				System.out.println(re);

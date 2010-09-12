@@ -59,6 +59,8 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	public final static String ARG_DEL = "delimiter";
 	public final static String ARG_LIST_DEL = "list delimiter";
 	public final static String ARG_KEY = "key in file";
+	public final static String ARG_KEY_TYPE = "key type";
+	public final static String ARG_SEC_KEY_TYPE = "secondary key type";
 	public final static String ARG_ATTR_NAMES = "attribute names";
 	public final static String ARG_ATTR_TYPES = "attribute types";
 	public final static String ARG_LIST_TYPES = "list data types";
@@ -87,6 +89,8 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 		addArgument(GET_IMPORTED, ARG_DEL);
 		addArgument(GET_IMPORTED, ARG_LIST_DEL);
 		addArgument(GET_IMPORTED, ARG_KEY);
+		addArgument(GET_IMPORTED, ARG_KEY_TYPE);
+		addArgument(GET_IMPORTED, ARG_SEC_KEY_TYPE);
 		addArgument(GET_IMPORTED, ARG_ATTR_NAMES);
 		addArgument(GET_IMPORTED, ARG_ATTR_TYPES);
 		addArgument(GET_IMPORTED, ARG_LIST_TYPES);
@@ -98,6 +102,8 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 		addArgument(IMPORT, ARG_DEL);
 		addArgument(IMPORT, ARG_LIST_DEL);
 		addArgument(IMPORT, ARG_KEY);
+		addArgument(IMPORT, ARG_KEY_TYPE);
+		addArgument(IMPORT, ARG_SEC_KEY_TYPE);
 		addArgument(IMPORT, ARG_ATTR_NAMES);
 		addArgument(IMPORT, ARG_ATTR_TYPES);
 		addArgument(IMPORT, ARG_LIST_TYPES);
@@ -168,6 +174,8 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			List<String> del;
 			String listDel;
 			int key = 0;
+			String keyType;
+			String secKeyType;
 			String[] attrNames;
 			Byte[] attrTypes;
 			Byte[] listTypes;
@@ -222,6 +230,18 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				}
 			} else {
 				key = 0;
+			}
+			Object kt = getArg(command, ARG_KEY_TYPE, args);
+			if (kt instanceof String) {
+				keyType = (String) kt;
+			} else {
+				keyType = null;
+			}
+			Object skt = getArg(command, ARG_SEC_KEY_TYPE, args);
+			if (skt instanceof String) {
+				secKeyType = (String) skt;
+			} else {
+				secKeyType = null;
 			}
 			Object an = getArg(command, ARG_ATTR_NAMES, args);
 			if (an instanceof String[]) {
@@ -303,9 +323,9 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			}
 
 			try {
-				setImportArgs(source, del, listDel, key, attrNames, attrTypes,
+				setImportArgs(source, del, listDel, key, keyType, secKeyType, attrNames, attrTypes,
 						listTypes, flags, startLine);
-				doImport(source, del, listDel, key, attrNames, attrTypes,
+				doImport(source, del, listDel, key, keyType, secKeyType, attrNames, attrTypes,
 						listTypes, flags, startLine);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -332,13 +352,15 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	 * @param startLine
 	 */
 	public static void setImportArgs(URL source, List<String> del,
-			String listDel, int key, String[] attrNames, Byte[] attrTypes,
+			String listDel, int key, String keyType, String secondaryKeyType, String[] attrNames, Byte[] attrTypes,
 			Byte[] listTypes, boolean[] flags, int startLine) {
 
 		importArgs.put(ARG_SOURCE, source);
 		importArgs.put(ARG_DEL, del);
 		importArgs.put(ARG_LIST_DEL, listDel);
 		importArgs.put(ARG_KEY, (Integer) key);
+		importArgs.put(ARG_KEY_TYPE, (Integer) key);
+		importArgs.put(ARG_SEC_KEY_TYPE, (Integer) key);
 		importArgs.put(ARG_ATTR_NAMES, attrNames);
 		importArgs.put(ARG_ATTR_TYPES, attrTypes);
 		importArgs.put(ARG_LIST_TYPES, listTypes);
@@ -355,6 +377,7 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	 * @param del
 	 * @param listDel
 	 * @param key
+	 * @param keyType
 	 * @param attrNames
 	 * @param attrTypes
 	 * @param listTypes
@@ -363,13 +386,13 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	 * @throws Exception
 	 */
 	public static void doImport(URL source, List<String> del, String listDel,
-			int key, String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
+			int key, String keyType, String secKeyType, String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
 			boolean[] flags, int startLine) throws Exception {
 
 		// Build mapping parameter object.
 		final AttributeMappingParameters mapping;
 
-		mapping = new AttributeMappingParameters(del, listDel, key, attrNames,
+		mapping = new AttributeMappingParameters(del, listDel, key, keyType, secKeyType, attrNames,
 				attrTypes, listTypes, flags);
 
 		if (source.toString().endsWith(ImportTextTableDialog.EXCEL_EXT)) {
@@ -405,16 +428,13 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 		// Create LoadNetwork Task
 		ImportAttributeTableTask task = new ImportAttributeTableTask(reader,
 				source);
-
-		// Configure JTask Dialog Pop-Up Box
 		JTaskConfig jTaskConfig = new JTaskConfig();
 		jTaskConfig.setOwner(Cytoscape.getDesktop());
 		jTaskConfig.displayCloseButton(true);
 		jTaskConfig.displayStatus(true);
 		jTaskConfig.setAutoDispose(false);
-
-		// Execute Task in New Thread; pops open JTask Dialog Box.
 		TaskManager.executeTask(task, jTaskConfig);
+
 	}
 
 }
