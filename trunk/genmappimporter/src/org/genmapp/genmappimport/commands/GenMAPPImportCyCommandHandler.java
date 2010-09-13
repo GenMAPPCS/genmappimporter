@@ -49,23 +49,25 @@ import cytoscape.task.util.TaskManager;
  */
 public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 
-	public final static String NAMESPACE = "genmapp importer";
+	public final static String NAMESPACE = "genmappImporter";
+
 	public final static String CREATE_NETWORK = "create network";
 	public final static String ARG_CREATE_NETWORK = "toggle";
+
 	public final static String GET_SOURCE = "get source";
 
 	public final static String GET_IMPORTED = "get imported";
 	public final static String ARG_SOURCE = "source";
 	public final static String ARG_DEL = "delimiter";
-	public final static String ARG_LIST_DEL = "list delimiter";
-	public final static String ARG_KEY = "key in file";
-	public final static String ARG_KEY_TYPE = "key type";
-	public final static String ARG_SEC_KEY_TYPE = "secondary key type";
-	public final static String ARG_ATTR_NAMES = "attribute names";
-	public final static String ARG_ATTR_TYPES = "attribute types";
-	public final static String ARG_LIST_TYPES = "list data types";
-	public final static String ARG_FLAGS = "import flags";
-	public final static String ARG_START_LINE = "start line number";
+	public final static String ARG_LIST_DEL = "listdelimiter";
+	public final static String ARG_KEY = "key";
+	public final static String ARG_KEY_TYPE = "keytype";
+	public final static String ARG_SEC_KEY_TYPE = "secondarykeytype";
+	public final static String ARG_ATTR_NAMES = "attributenames";
+	public final static String ARG_ATTR_TYPES = "attributetypes";
+	public final static String ARG_LIST_TYPES = "listtypes";
+	public final static String ARG_FLAGS = "importflags";
+	public final static String ARG_START_LINE = "startline";
 
 	public final static String IMPORT = "import";
 
@@ -203,9 +205,10 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				del = new ArrayList<String>();
 				// escape the escape characters
 				d = ((String) d).replaceAll("\t", "\\\\t");
-				// remove brackets
-				d = ((String) d).substring(1, ((String) d).length() - 1);
-				// parse at commma delimiters
+				// remove brackets, if they are there
+				if (((String) d).startsWith("[") && ((String) d).endsWith("]"))
+					d = ((String) d).substring(1, ((String) d).length() - 1);
+				// parse at comma delimiters
 				String[] list = ((String) d).split(",");
 				for (String item : list) {
 					del.add(item);
@@ -247,9 +250,11 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			if (an instanceof String[]) {
 				attrNames = (String[]) an;
 			} else if (an instanceof String) {
-				// remove brackets
-				an = ((String) an).substring(1, ((String) an).length() - 1);
-				// parse at commma delimiters
+				// remove brackets, if they are there
+				if (((String) an).startsWith("[")
+						&& ((String) an).endsWith("]"))
+					an = ((String) an).substring(1, ((String) an).length() - 1);
+				// parse at comma delimiters
 				attrNames = ((String) an).split(",");
 			} else {
 				attrNames = null;
@@ -258,9 +263,11 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			if (at instanceof Byte[]) {
 				attrTypes = (Byte[]) at;
 			} else if (at instanceof String) {
-				// remove brackets
-				at = ((String) at).substring(1, ((String) at).length() - 1);
-				// parse at commma delimiters
+				// remove brackets, if they are there
+				if (((String) at).startsWith("[")
+						&& ((String) at).endsWith("]"))
+					at = ((String) at).substring(1, ((String) at).length() - 1);
+				// parse at comma delimiters
 				String[] list = ((String) at).split(",");
 				List<Byte> temp = new ArrayList<Byte>();
 				for (String item : list) {
@@ -275,9 +282,11 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			if (lt instanceof Byte[]) {
 				listTypes = (Byte[]) lt;
 			} else if (lt instanceof String) {
-				// remove brackets
-				lt = ((String) lt).substring(1, ((String) lt).length() - 1);
-				// parse at commma delimiters
+				// remove brackets, if they are there
+				if (((String) lt).startsWith("[")
+						&& ((String) lt).endsWith("]"))
+					lt = ((String) lt).substring(1, ((String) lt).length() - 1);
+				// parse at comma delimiters
 				String[] list = ((String) lt).split(",");
 				List<Byte> temp = new ArrayList<Byte>();
 				for (String item : list) {
@@ -298,9 +307,10 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			if (f instanceof boolean[]) {
 				flags = (boolean[]) f;
 			} else if (f instanceof String) {
-				// remove brackets
-				f = ((String) f).substring(1, ((String) f).length() - 1);
-				// parse at commma delimiters
+				// remove brackets, if they are there
+				if (((String) f).startsWith("[") && ((String) f).endsWith("]"))
+					f = ((String) f).substring(1, ((String) f).length() - 1);
+				// parse at comma delimiters
 				String[] list = ((String) f).split(",");
 				flags = new boolean[list.length];
 				int i = 0;
@@ -323,10 +333,10 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			}
 
 			try {
-				setImportArgs(source, del, listDel, key, keyType, secKeyType, attrNames, attrTypes,
-						listTypes, flags, startLine);
-				doImport(source, del, listDel, key, keyType, secKeyType, attrNames, attrTypes,
-						listTypes, flags, startLine);
+				setImportArgs(source, del, listDel, key, keyType, secKeyType,
+						attrNames, attrTypes, listTypes, flags, startLine);
+				doImport(source, del, listDel, key, keyType, secKeyType,
+						attrNames, attrTypes, listTypes, flags, startLine);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -352,8 +362,9 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	 * @param startLine
 	 */
 	public static void setImportArgs(URL source, List<String> del,
-			String listDel, int key, String keyType, String secondaryKeyType, String[] attrNames, Byte[] attrTypes,
-			Byte[] listTypes, boolean[] flags, int startLine) {
+			String listDel, int key, String keyType, String secondaryKeyType,
+			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
+			boolean[] flags, int startLine) {
 
 		importArgs.put(ARG_SOURCE, source);
 		importArgs.put(ARG_DEL, del);
@@ -386,14 +397,15 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	 * @throws Exception
 	 */
 	public static void doImport(URL source, List<String> del, String listDel,
-			int key, String keyType, String secKeyType, String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
-			boolean[] flags, int startLine) throws Exception {
+			int key, String keyType, String secKeyType, String[] attrNames,
+			Byte[] attrTypes, Byte[] listTypes, boolean[] flags, int startLine)
+			throws Exception {
 
 		// Build mapping parameter object.
 		final AttributeMappingParameters mapping;
 
-		mapping = new AttributeMappingParameters(del, listDel, key, keyType, secKeyType, attrNames,
-				attrTypes, listTypes, flags);
+		mapping = new AttributeMappingParameters(del, listDel, key, keyType,
+				secKeyType, attrNames, attrTypes, listTypes, flags);
 
 		if (source.toString().endsWith(ImportTextTableDialog.EXCEL_EXT)) {
 			/*
