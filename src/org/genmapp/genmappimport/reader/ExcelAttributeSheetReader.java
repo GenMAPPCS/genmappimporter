@@ -169,4 +169,9 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	public int[] getNodeIndexList() {
 		return parser.getNodeIndexList();
 	}
+
+	public void firstRead() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
 }

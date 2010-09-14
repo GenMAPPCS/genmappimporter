@@ -49,7 +49,7 @@ import cytoscape.task.util.TaskManager;
  */
 public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 
-	public final static String NAMESPACE = "genmappImporter";
+	public final static String NAMESPACE = "genmappimporter";
 
 	public final static String CREATE_NETWORK = "create network";
 	public final static String ARG_CREATE_NETWORK = "toggle";
@@ -57,6 +57,8 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	public final static String GET_SOURCE = "get source";
 
 	public final static String GET_IMPORTED = "get imported";
+
+	public final static String IMPORT = "import";
 	public final static String ARG_SOURCE = "source";
 	public final static String ARG_DEL = "delimiter";
 	public final static String ARG_LIST_DEL = "listdelimiter";
@@ -69,12 +71,14 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 	public final static String ARG_FLAGS = "importflags";
 	public final static String ARG_START_LINE = "startline";
 
-	public final static String IMPORT = "import";
+	public final static String REIMPORT_SOURCE = "reimport";
 
-	public static boolean createNetworkToggle = true;
+
+	public static boolean createNetworkToggle = false;
 	public static String importSourceUrl = null;
 
-	public static Map<String, Object> importArgs = new HashMap<String, Object>();
+	//master Map'o'Map to store all import args keyed by source url
+	public static Map<URL, Map<String, Object>> importArgsMap = new HashMap<URL, Map<String, Object>>();
 
 	public GenMAPPImportCyCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
@@ -83,23 +87,16 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 				"Set toggle to create network and view from imported table data");
 		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
 
-		addDescription(GET_SOURCE, "get URL for imported table");
+		addDescription(GET_SOURCE, "get URL for last imported table");
 		addArgument(GET_SOURCE);
 
 		addDescription(GET_IMPORTED, "get parameters for last imported table");
 		addArgument(GET_IMPORTED, ARG_SOURCE);
-		addArgument(GET_IMPORTED, ARG_DEL);
-		addArgument(GET_IMPORTED, ARG_LIST_DEL);
-		addArgument(GET_IMPORTED, ARG_KEY);
-		addArgument(GET_IMPORTED, ARG_KEY_TYPE);
-		addArgument(GET_IMPORTED, ARG_SEC_KEY_TYPE);
-		addArgument(GET_IMPORTED, ARG_ATTR_NAMES);
-		addArgument(GET_IMPORTED, ARG_ATTR_TYPES);
-		addArgument(GET_IMPORTED, ARG_LIST_TYPES);
-		addArgument(GET_IMPORTED, ARG_FLAGS);
-		addArgument(GET_IMPORTED, ARG_START_LINE);
 
-		addDescription(IMPORT, "perform table import");
+		addDescription(REIMPORT_SOURCE, "perform re-import of existing source");
+		addArgument(REIMPORT_SOURCE, ARG_SOURCE);
+
+		addDescription(IMPORT, "perform new table import");
 		addArgument(IMPORT, ARG_SOURCE);
 		addArgument(IMPORT, ARG_DEL);
 		addArgument(IMPORT, ARG_LIST_DEL);
@@ -133,12 +130,65 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 		} else if (GET_SOURCE.equals(command)) {
 			result.addResult(importSourceUrl);
 			result.addMessage("returning URL: " + importSourceUrl);
-		} else if (GET_IMPORTED.equals(command)) {
+		} else if (REIMPORT_SOURCE.equals(command)){
+			URL source = null;
+			Object obj = args.get(ARG_SOURCE);
+			if (obj instanceof URL){
+				source = (URL) obj;
+			} else if (obj instanceof String){
+				try {
+					source = new URL((String) obj);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else 
+				throw new CyCommandException("source object type not recognized, try URL or String.");
+			
+			//extract args from Map'o'Maps
+			Map<String, Object> importArgs = importArgsMap.get(source);
+			List<String> del = (List<String>) importArgs.get(ARG_DEL);
+			String listDel = (String) importArgs.get(ARG_LIST_DEL);
+			int key = (Integer) importArgs.get(ARG_KEY);
+			String keyType = (String) importArgs.get(ARG_KEY_TYPE);
+			String secKeyType = (String) importArgs.get(ARG_SEC_KEY_TYPE);
+			String[] attrNames = (String[]) importArgs.get(ARG_ATTR_NAMES);
+			Byte[] attrTypes = (Byte[]) importArgs.get(ARG_ATTR_TYPES);
+			Byte[] listTypes = (Byte[]) importArgs.get(ARG_LIST_TYPES);
+			boolean[] flags = (boolean[]) importArgs.get(ARG_FLAGS);
+			int startLine = (Integer) importArgs.get(ARG_START_LINE);			
+			
+			try {
+				doImport(source, del, listDel, key, keyType, secKeyType,
+						attrNames, attrTypes, listTypes, flags, startLine);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		else if (GET_IMPORTED.equals(command)) {
+			URL source = null;
+			Object obj = args.get(ARG_SOURCE);
+			if (obj instanceof URL){
+				source = (URL) obj;
+			} else if (obj instanceof String){
+				try {
+					source = new URL((String) obj);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else 
+				throw new CyCommandException("source object type not recognized, try URL or String.");
+			
+			Map<String, Object> importArgs = importArgsMap.get(source);
 			for (String t : importArgs.keySet()) {
 				Object o = importArgs.get(t);
-				String s = "[";
 				result.addResult(t, o);
-				if (null == o) {
+				
+				//produce nice string for message
+				String s = "[";if (null == o) {
 					s = "null";
 				} else if (o instanceof String[]) {
 					String[] so = (String[]) o;
@@ -366,18 +416,21 @@ public class GenMAPPImportCyCommandHandler extends AbstractCommandHandler {
 			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
 			boolean[] flags, int startLine) {
 
+		Map<String, Object> importArgs = new HashMap<String, Object>(); 
+		
 		importArgs.put(ARG_SOURCE, source);
 		importArgs.put(ARG_DEL, del);
 		importArgs.put(ARG_LIST_DEL, listDel);
 		importArgs.put(ARG_KEY, (Integer) key);
-		importArgs.put(ARG_KEY_TYPE, (Integer) key);
-		importArgs.put(ARG_SEC_KEY_TYPE, (Integer) key);
+		importArgs.put(ARG_KEY_TYPE, keyType);
+		importArgs.put(ARG_SEC_KEY_TYPE, secondaryKeyType);
 		importArgs.put(ARG_ATTR_NAMES, attrNames);
 		importArgs.put(ARG_ATTR_TYPES, attrTypes);
 		importArgs.put(ARG_LIST_TYPES, listTypes);
 		importArgs.put(ARG_FLAGS, flags);
 		importArgs.put(ARG_START_LINE, (Integer) startLine);
-
+		
+		importArgsMap.put(source, importArgs);
 	}
 
 	/**
