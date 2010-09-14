@@ -15,17 +15,21 @@
  ******************************************************************************/
 package org.genmapp.genmappimport.reader;
 
-import giny.model.Node;
-
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cytoscape.command.CyCommandException;
+import cytoscape.command.CyCommandManager;
+import cytoscape.command.CyCommandResult;
+import cytoscape.util.CyNetworkNaming;
 import cytoscape.util.URLUtil;
 
 /**
@@ -182,6 +186,25 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 		is.close();
 		bufRd.close();
+		
+		// Add dataset to Workspaces
+		File tempFile = new File(source.toString());
+		String t = tempFile.getName();
+		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("url", source);
+		args.put("displayname", title);
+		args.put("rows", lineCount);
+		try {
+			CyCommandResult result = CyCommandManager.execute("workspaces", "add dataset", args);
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
