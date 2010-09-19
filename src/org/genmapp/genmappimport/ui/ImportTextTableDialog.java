@@ -70,7 +70,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.xml.bind.JAXBException;
 
-import org.genmapp.genmappimport.commands.CommandHandler;
+import org.genmapp.genmappimport.commands.DatasetCommandHandler;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
 import org.jdesktop.layout.GroupLayout;
 
@@ -1119,7 +1119,7 @@ public class ImportTextTableDialog extends JDialog
 //				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 //				importFlags, startLineNumber);
 
-		CommandHandler.doImport(source, del, listDelimiter,
+		DatasetCommandHandler.doImport(source, del, listDelimiter,
 				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 				importFlags, startLineNumber);
 

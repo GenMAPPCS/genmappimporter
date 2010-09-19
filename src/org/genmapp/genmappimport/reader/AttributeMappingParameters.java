@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.genmapp.genmappimport.commands.CommandHandler;
+import org.genmapp.genmappimport.commands.DatasetCommandHandler;
 
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
@@ -178,19 +178,19 @@ public class AttributeMappingParameters {
 		// }
 
 		// Build string version of cycommand to store in network attributes
-		CommandHandler g;
+		DatasetCommandHandler g;
 		this.commandString = 
-			CommandHandler.ARG_ATTR_NAMES+"=\""+CommandHandler.stringify(attrNames)+"\" " +
-			CommandHandler.ARG_ATTR_TYPES+"=\""+CommandHandler.stringify(attributeTypes)+"\" " +
-			CommandHandler.ARG_DELS+"=\""+CommandHandler.stringify(delimiters)+"\" " +
-			CommandHandler.ARG_FLAGS+"=\""+CommandHandler.stringify(importFlags)+"\" " +
-			CommandHandler.ARG_KEY+"=\""+CommandHandler.stringify(keyIndex)+"\" " +
-			CommandHandler.ARG_KEY_TYPE+"=\""+CommandHandler.stringify(keyType)+"\" " +
-			CommandHandler.ARG_LIST_DEL+"=\""+CommandHandler.stringify(listDelimiter)+"\" " +
-			CommandHandler.ARG_LIST_TYPES+"=\""+CommandHandler.stringify(listAttributeTypes)+"\" " +
-			CommandHandler.ARG_SEC_KEY_TYPE+"=\""+CommandHandler.stringify(secKeyType)+"\" " +
-			CommandHandler.ARG_SOURCE+"=\""+CommandHandler.stringify(source)+"\" " +
-			CommandHandler.ARG_START_LINE+"=\""+CommandHandler.stringify(startLine)+"\"";
+			DatasetCommandHandler.ARG_ATTR_NAMES+"=\""+DatasetCommandHandler.stringify(attrNames)+"\" " +
+			DatasetCommandHandler.ARG_ATTR_TYPES+"=\""+DatasetCommandHandler.stringify(attributeTypes)+"\" " +
+			DatasetCommandHandler.ARG_DELS+"=\""+DatasetCommandHandler.stringify(delimiters)+"\" " +
+			DatasetCommandHandler.ARG_FLAGS+"=\""+DatasetCommandHandler.stringify(importFlags)+"\" " +
+			DatasetCommandHandler.ARG_KEY+"=\""+DatasetCommandHandler.stringify(keyIndex)+"\" " +
+			DatasetCommandHandler.ARG_KEY_TYPE+"=\""+DatasetCommandHandler.stringify(keyType)+"\" " +
+			DatasetCommandHandler.ARG_LIST_DEL+"=\""+DatasetCommandHandler.stringify(listDelimiter)+"\" " +
+			DatasetCommandHandler.ARG_LIST_TYPES+"=\""+DatasetCommandHandler.stringify(listAttributeTypes)+"\" " +
+			DatasetCommandHandler.ARG_SEC_KEY_TYPE+"=\""+DatasetCommandHandler.stringify(secKeyType)+"\" " +
+			DatasetCommandHandler.ARG_SOURCE+"=\""+DatasetCommandHandler.stringify(source)+"\" " +
+			DatasetCommandHandler.ARG_START_LINE+"=\""+DatasetCommandHandler.stringify(startLine)+"\"";
 		
 	}
 
@@ -383,7 +383,7 @@ public class AttributeMappingParameters {
 	 */
 	public void setRowCount(Integer rowCount) {
 		this.rowCount = rowCount;
-		this.commandString = this.commandString + " "+CommandHandler.ARG_ROWS+"=\""+CommandHandler.stringify(rowCount)+"\"";
+		this.commandString = this.commandString + " "+DatasetCommandHandler.ARG_ROWS+"=\""+DatasetCommandHandler.stringify(rowCount)+"\"";
 	}
 
 }

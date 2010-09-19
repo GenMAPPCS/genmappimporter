@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.genmapp.genmappimport.commands.CommandHandler;
+import org.genmapp.genmappimport.commands.DatasetCommandHandler;
 
 import cytoscape.CyNetwork;
 import cytoscape.CyNode;
@@ -412,7 +412,7 @@ public class AttributeLineParser {
 		/*
 		 * Finally, we create nodes if a new network is requested
 		 */
-		if (CommandHandler.createNetworkToggle) {
+		if (DatasetCommandHandler.createNetworkToggle) {
 			n = Cytoscape.getCyNode(primaryKey, true);
 			buildNodeList(n.getRootGraphIndex());
 			mapAttributes(amp.getKeyIndex(), primaryKey, parts);

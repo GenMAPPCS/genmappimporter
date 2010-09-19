@@ -46,7 +46,7 @@ import cytoscape.task.util.TaskManager;
  * CyCommandHandler registration/execution
  * 
  */
-public class CommandHandler extends AbstractCommandHandler {
+public class DatasetCommandHandler extends AbstractCommandHandler {
 
 	public final static String NAMESPACE = "genmappimporter";
 
@@ -79,7 +79,7 @@ public class CommandHandler extends AbstractCommandHandler {
 	// master Map'o'Map to store all import args keyed by source url
 //	public static Map<URL, Map<String, Object>> importArgsMap = new HashMap<URL, Map<String, Object>>();
 
-	public CommandHandler() {
+	public DatasetCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
 
 		addDescription(CREATE_NETWORK,

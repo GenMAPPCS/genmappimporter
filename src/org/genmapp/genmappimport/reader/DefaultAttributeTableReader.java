@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genmapp.genmappimport.commands.CommandHandler;
+import org.genmapp.genmappimport.commands.DatasetCommandHandler;
 
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
@@ -49,6 +49,8 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	private final URL source;
 	private AttributeMappingParameters amp;
 	private final AttributeLineParser parser;
+	private final String NET_ATTR_DATASETS = "org.genmapp.datasets_1.0";
+	private final String NET_ATTR_DATASET_PREFIX = "org.genmapp.dataset.";
 
 	// Number of mapped attributes.
 	private int globalCounter = 0;
@@ -199,21 +201,21 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		for (CyNetwork network : amp.getMappedNetworks()){
 			String netid = network.getIdentifier();
 			List<String> sourcelist = new ArrayList<String>();
-			if (Cytoscape.getNetworkAttributes().hasAttribute(netid, "org.genmapp.datasets_1.0")){
-				sourcelist = (List<String>) Cytoscape.getNetworkAttributes().getListAttribute(netid, "org.genmapp.datasets_1.0");
+			if (Cytoscape.getNetworkAttributes().hasAttribute(netid, NET_ATTR_DATASETS)){
+				sourcelist = (List<String>) Cytoscape.getNetworkAttributes().getListAttribute(netid, NET_ATTR_DATASETS);
 				if (!sourcelist.contains(title)){
 					sourcelist.add(title);
-					Cytoscape.getNetworkAttributes().setListAttribute(netid, "org.genmapp.datasets_1.0", sourcelist);
+					Cytoscape.getNetworkAttributes().setListAttribute(netid, NET_ATTR_DATASETS, sourcelist);
 				}
 			} else {
 				sourcelist.add(title);
-				Cytoscape.getNetworkAttributes().setListAttribute(netid, "org.genmapp.datasets_1.0", sourcelist);	
+				Cytoscape.getNetworkAttributes().setListAttribute(netid, NET_ATTR_DATASETS, sourcelist);	
 			}
-			Cytoscape.getNetworkAttributes().setAttribute(netid, "org.genmapp.dataset."+ title, commandString);
+			Cytoscape.getNetworkAttributes().setAttribute(netid, NET_ATTR_DATASET_PREFIX + title, commandString);
 		}
 		
 		// Add dataset to Workspaces
-		CommandHandler.updateWorkspaces(title, commandString);
+		DatasetCommandHandler.updateWorkspaces(title, commandString);
 
 //		Map<String, Object> args = new HashMap<String, Object>();
 //		args.put("url", source);
