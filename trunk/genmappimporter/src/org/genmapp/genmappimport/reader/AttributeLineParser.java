@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+import org.genmapp.genmappimport.commands.CommandHandler;
 
 import cytoscape.CyNetwork;
 import cytoscape.CyNode;
@@ -45,7 +45,8 @@ public class AttributeLineParser {
 	private List<Integer> nodeList = new ArrayList<Integer>();
 	private List<String> keyList = new ArrayList<String>();
 	private Map<String, Set<String>> primaryMap = new HashMap<String, Set<String>>();
-//	private Map<String, Set<String>> secondaryMap = new HashMap<String, Set<String>>();
+	// private Map<String, Set<String>> secondaryMap = new HashMap<String,
+	// Set<String>>();
 
 	public static final String ID = "GeneID";
 	public static final String CODE = "SystemCode";
@@ -202,6 +203,7 @@ public class AttributeLineParser {
 			}
 		}
 	}
+	
 	/**
 	 * 
 	 */
@@ -217,14 +219,14 @@ public class AttributeLineParser {
 					.getResult();
 			for (String primaryKey : keyMappings.keySet()) {
 				primaryMap.put(primaryKey, keyMappings.get(primaryKey));
-//				for (String secondaryKey : keyMappings.get(primaryKey)) {
-//					Set<String> tempSet = new HashSet<String>();
-//					tempSet = secondaryMap.get(secondaryKey);
-//					if (null == tempSet)
-//						tempSet = new HashSet<String>();
-//					tempSet.add(primaryKey);
-//					secondaryMap.put(secondaryKey, tempSet);
-//				}
+				// for (String secondaryKey : keyMappings.get(primaryKey)) {
+				// Set<String> tempSet = new HashSet<String>();
+				// tempSet = secondaryMap.get(secondaryKey);
+				// if (null == tempSet)
+				// tempSet = new HashSet<String>();
+				// tempSet.add(primaryKey);
+				// secondaryMap.put(secondaryKey, tempSet);
+				// }
 			}
 		}
 	}
@@ -318,74 +320,111 @@ public class AttributeLineParser {
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
 		Set<String> secKeys = primaryMap.get(primaryKey);
 
-		// First, check both primary and secondary keys in ID column
+		// collect existing primary and secondary key nodes
 		Node n = Cytoscape.getCyNode(primaryKey, false);
-		if (null != n) {
-			mapAttributes(amp.getKeyIndex(), primaryKey, parts);
-		}
+		List<Node> snlist = new ArrayList<Node>();
 		if (secKeys != null) {
 			for (String secondaryKey : secKeys) {
-				n = Cytoscape.getCyNode(secondaryKey, false);
-				if (null != n) {
-					mapAttributes(-1, secondaryKey, parts);
-				}
-			}
-
-			// then, we check secondary keys in secondary column (e.g.,
-			// "__Ensembl Yeast") per network with view
-			for (CyNetwork network : Cytoscape.getNetworkSet()) {
-				if (Cytoscape.viewExists(network.getIdentifier())) {
-					// check network-level system code
-					String networkCode = Cytoscape.getNetworkAttributes()
-							.getStringAttribute(network.getIdentifier(), CODE);
-					if (networkCode == DATASET) {
-						// skip this network; it's another dataset!
-						continue;
-					}
-					for (CyNode cn : (List<CyNode>) network.nodesList()) {
-						boolean didMap = false;
-						List<String> sk = (List<String>) Cytoscape
-								.getNodeAttributes().getListAttribute(
-										cn.getIdentifier(),
-										"__" + amp.getSecKeyType());
-						if (sk != null) {
-							if (sk.size() > 0) {
-								for (String secondaryKey : secKeys) {
-									if (sk.contains(secondaryKey)) {
-										didMap = mapAttributes(-1, cn
-												.getIdentifier(), parts);
-										break; // skip remaining secKeys
-									}
-								}
-								if (didMap)
-									continue; // next node
-							}
-						}
-						// then check if primaryKey matches ID/CODE directly
-						String pk = Cytoscape.getNodeAttributes()
-								.getStringAttribute(cn.getIdentifier(), ID);
-						String pkt = Cytoscape.getNodeAttributes()
-								.getStringAttribute(cn.getIdentifier(), CODE);
-						if (pk != null && pkt != null) {
-							if (pkt.equals(amp.getKeyType())
-									&& pk.equals(primaryKey)) {
-								mapAttributes(amp.getKeyIndex(), cn
-										.getIdentifier(), parts);
-
-							}
-						}
-					}
+				Node sn = Cytoscape.getCyNode(secondaryKey, false);
+				if (null != sn) {
+					snlist.add(sn);
 				}
 			}
 		}
+		
+		/*
+		 * Perform mapping on a per network basis to track associations with
+		 * datasets
+		 */
+		for (CyNetwork network : Cytoscape.getNetworkSet()) {
+			if (Cytoscape.viewExists(network.getIdentifier())) {
+				// check network-level system code
+				String networkCode = Cytoscape.getNetworkAttributes()
+						.getStringAttribute(network.getIdentifier(), CODE);
+				if (networkCode == DATASET) {
+					// skip this network; it's another dataset!
+					continue;
+				}
+				for (CyNode cn : (List<CyNode>) network.nodesList()) {
+					boolean didMap = false;
+					/*
+					 * First, check against primary key nodes
+					 */
+					if (null != n) {
+						if (n == cn) {
+							mapAttributes(amp.getKeyIndex(),
+									cn.getIdentifier(), parts);
+							amp.addMappedNetwork(network);
+						}
+					}
+					/*
+					 * Then against secondary keys
+					 */
+					if (snlist.size() > 0) {
+						if (snlist.contains(cn)) {
+							mapAttributes(-1, cn.getIdentifier(), parts);
+							amp.addMappedNetwork(network);
+						}
+					}
+					/*
+					 * Then, we check secondary keys in secondary column (e.g.,
+					 * "__Ensembl Yeast") per network with view
+					 */
+					List<String> sk = (List<String>) Cytoscape
+							.getNodeAttributes().getListAttribute(
+									cn.getIdentifier(),
+									"__" + amp.getSecKeyType());
+					if (sk != null) {
+						if (sk.size() > 0) {
+							for (String secondaryKey : secKeys) {
+								if (sk.contains(secondaryKey)) {
+									didMap = mapAttributes(-1, cn
+											.getIdentifier(), parts);
+									amp.addMappedNetwork(network);
+									break; // skip remaining secKeys
+								}
+							}
+							if (didMap)
+								continue; // next node
+						}
+					}
+					/*
+					 * Then check if primaryKey matches ID/CODE directly
+					 */
+					String pk = Cytoscape.getNodeAttributes()
+							.getStringAttribute(cn.getIdentifier(), ID);
+					String pkt = Cytoscape.getNodeAttributes()
+							.getStringAttribute(cn.getIdentifier(), CODE);
+					if (pk != null && pkt != null) {
+						if (pkt.equals(amp.getKeyType())
+								&& pk.equals(primaryKey)) {
+							mapAttributes(amp.getKeyIndex(),
+									cn.getIdentifier(), parts);
+							amp.addMappedNetwork(network);
 
-		// finally, we create nodes if a network requested
-		if (GenMAPPImportCyCommandHandler.createNetworkToggle) {
+						}
+					}
+				}
+
+			}
+		}
+
+		/*
+		 * Finally, we create nodes if a new network is requested
+		 */
+		if (CommandHandler.createNetworkToggle) {
 			n = Cytoscape.getCyNode(primaryKey, true);
 			buildNodeList(n.getRootGraphIndex());
 			mapAttributes(amp.getKeyIndex(), primaryKey, parts);
 		}
 	}
+	
+	/**
+	 * @param skipIndex
+	 * @param nkey
+	 * @param parts
+	 * @return
+	 */
 	private boolean mapAttributes(int skipIndex, String nkey, String[] parts) {
 
 		final int partsLen = parts.length;
@@ -432,6 +471,7 @@ public class AttributeLineParser {
 		}
 		return true;
 	}
+	
 	/**
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 * 
