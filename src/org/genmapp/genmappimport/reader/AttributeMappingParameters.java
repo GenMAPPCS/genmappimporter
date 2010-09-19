@@ -18,13 +18,21 @@ package org.genmapp.genmappimport.reader;
 import static org.genmapp.genmappimport.reader.TextFileDelimiters.PIPE;
 import static org.genmapp.genmappimport.reader.TextFileDelimiters.TAB;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.genmapp.genmappimport.commands.CommandHandler;
+
+import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
+import cytoscape.util.CyNetworkNaming;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.
@@ -35,6 +43,8 @@ public class AttributeMappingParameters {
 	public static final String ID = "ID";
 	private static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
+	private URL source;
+	private String title;
 	private final int keyIndex;
 	private final String keyType;
 	private String secondaryKeyType;
@@ -43,13 +53,19 @@ public class AttributeMappingParameters {
 	private Byte[] listAttributeTypes;
 	private List<String> delimiters;
 	private String listDelimiter;
-	private boolean[] importFlag;
+	private boolean[] importFlags;
+	private Integer startLine;
 	private Map<String, List<String>> attr2id;
 	private CyAttributes attributes;
+	private Set<CyNetwork> mappedNetworks = new HashSet<CyNetwork>();;
+	private String commandString;
+	private Integer rowCount;
 
 	/**
 	 * Creates a new AttributeMappingParameters object.
 	 * 
+	 * @param source
+	 *            url of source file
 	 * @param delimiters
 	 *            user-defined delimiters between data columns
 	 * @param listDelimiter
@@ -66,25 +82,20 @@ public class AttributeMappingParameters {
 	 *            data types per column
 	 * @param listAttributeTypes
 	 *            data types per list
-	 * 
+	 * @param importFlags
+	 *            columns to import
+	 * @param startLine
+	 *            row number to start importing
 	 * @throws Exception
 	 *             columns must have headers
 	 */
-	/**
-	 * @param delimiters
-	 * @param listDelimiter
-	 * @param keyIndex
-	 * @param attrNames
-	 * @param attributeTypes
-	 * @param listAttributeTypes
-	 * @throws Exception
-	 */
-	public AttributeMappingParameters(final List<String> delimiters,
-			final String listDelimiter, final int keyIndex, final String keyType, final String secKeyType,
+	public AttributeMappingParameters(URL source,
+			final List<String> delimiters, final String listDelimiter,
+			final int keyIndex, final String keyType, final String secKeyType,
 			final String[] attrNames, Byte[] attributeTypes,
-			Byte[] listAttributeTypes, boolean[] importFlag)
+			Byte[] listAttributeTypes, boolean[] importFlags, Integer startLine)
+			throws Exception {
 
-	throws Exception {
 		if (attrNames == null) {
 			throw new Exception("attributeNames should not be null.");
 		}
@@ -100,13 +111,19 @@ public class AttributeMappingParameters {
 		/*
 		 * These values should not be null!
 		 */
+		this.source = source;
 		this.keyIndex = keyIndex;
 		this.keyType = keyType;
 		this.secondaryKeyType = secKeyType;
 		this.attributeNames = attrNames;
-
 		this.listAttributeTypes = listAttributeTypes;
-
+		this.startLine = startLine;
+		
+		File tempFile = new File(source.toString());
+		String t = tempFile.getName();
+		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+		this.title = title;
+		
 		/*
 		 * If delimiter is not available, use default value (TAB)
 		 */
@@ -142,14 +159,14 @@ public class AttributeMappingParameters {
 		/*
 		 * Selective import of columns
 		 */
-		if (importFlag == null) {
-			this.importFlag = new boolean[attrNames.length];
+		if (importFlags == null) {
+			this.importFlags = new boolean[attrNames.length];
 
-			for (int i = 0; i < this.importFlag.length; i++) {
-				this.importFlag[i] = true;
+			for (int i = 0; i < this.importFlags.length; i++) {
+				this.importFlags[i] = true;
 			}
 		} else {
-			this.importFlag = importFlag;
+			this.importFlags = importFlags;
 		}
 		attributes = Cytoscape.getNodeAttributes();
 
@@ -159,6 +176,43 @@ public class AttributeMappingParameters {
 		// && !this.mappingAttribute.equals(ID)) {
 		// buildAttribute2IDMap(it);
 		// }
+
+		// Build string version of cycommand to store in network attributes
+		CommandHandler g;
+		this.commandString = 
+			CommandHandler.ARG_ATTR_NAMES+"=\""+CommandHandler.stringify(attrNames)+"\" " +
+			CommandHandler.ARG_ATTR_TYPES+"=\""+CommandHandler.stringify(attributeTypes)+"\" " +
+			CommandHandler.ARG_DELS+"=\""+CommandHandler.stringify(delimiters)+"\" " +
+			CommandHandler.ARG_FLAGS+"=\""+CommandHandler.stringify(importFlags)+"\" " +
+			CommandHandler.ARG_KEY+"=\""+CommandHandler.stringify(keyIndex)+"\" " +
+			CommandHandler.ARG_KEY_TYPE+"=\""+CommandHandler.stringify(keyType)+"\" " +
+			CommandHandler.ARG_LIST_DEL+"=\""+CommandHandler.stringify(listDelimiter)+"\" " +
+			CommandHandler.ARG_LIST_TYPES+"=\""+CommandHandler.stringify(listAttributeTypes)+"\" " +
+			CommandHandler.ARG_SEC_KEY_TYPE+"=\""+CommandHandler.stringify(secKeyType)+"\" " +
+			CommandHandler.ARG_SOURCE+"=\""+CommandHandler.stringify(source)+"\" " +
+			CommandHandler.ARG_START_LINE+"=\""+CommandHandler.stringify(startLine)+"\"";
+		
+	}
+
+	/**
+	 * @return the source
+	 */
+	public URL getSource() {
+		return source;
+	}
+
+	/**
+	 * @return the title
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * @return the stringCommand
+	 */
+	public String getCommandString() {
+		return commandString;
 	}
 
 	/**
@@ -199,15 +253,15 @@ public class AttributeMappingParameters {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
 	 */
 	public boolean[] getImportFlag() {
 		// TODO Auto-generated method stub
-		return importFlag;
+		return importFlags;
 	}
-	
+
 	/**
 	 * DOCUMENT ME!
 	 * 
@@ -309,71 +363,27 @@ public class AttributeMappingParameters {
 		return attr2id;
 	}
 
-	// /**
-	// * Building hashmap for attribute <--> object ID mapping.
-	// *
-	// * NOT USED HERE. BUT MAY BE USEFUL CODE.
-	// *
-	// */
-	// private void buildAttribute2IDMap(Iterator<Node> it) {
-	// // Mapping from attribute value to object ID.
-	// attr2id = new HashMap<String, List<String>>();
-	//
-	// String objectID = null;
-	// Object valObj = null;
-	//
-	// while (it.hasNext()) {
-	//
-	// Node node = (Node) it.next();
-	// objectID = node.getIdentifier();
-	//
-	// if (CyAttributesUtils.getClass(mappingAttribute, attributes) ==
-	// List.class) {
-	// valObj = attributes
-	// .getListAttribute(objectID, mappingAttribute);
-	// } else if (CyAttributesUtils.getClass(mappingAttribute, attributes) !=
-	// Map.class) {
-	// valObj = attributes.getAttribute(objectID, mappingAttribute);
-	// }
-	//
-	// // Put the <attribute value>-<object ID list> pair to the Map
-	// // object.
-	// if (valObj != null) {
-	// if (valObj instanceof List) {
-	// List keys = (List) valObj;
-	//
-	// for (Object key : keys) {
-	// if (key != null) {
-	// putAttrValue(key.toString(), objectID);
-	// }
-	// }
-	// } else {
-	// putAttrValue(valObj.toString(), objectID);
-	// }
-	//
-	// // if (attr2id.containsKey(attributeValue)) {
-	// // objIdList = (List<String>) attr2id.get(attributeValue);
-	// // } else {
-	// // objIdList = new ArrayList<String>();
-	// // }
-	// //
-	// // objIdList.add(objectID);
-	// // attr2id.put(attributeValue, objIdList);
-	// }
-	// }
-	// }
-	//
-	// private void putAttrValue(String attributeValue, String objectID) {
-	// List<String> objIdList = null;
-	//
-	// if (attr2id.containsKey(attributeValue)) {
-	// objIdList = attr2id.get(attributeValue);
-	// } else {
-	// objIdList = new ArrayList<String>();
-	// }
-	//
-	// objIdList.add(objectID);
-	// attr2id.put(attributeValue, objIdList);
-	// }
+	public void addMappedNetwork(CyNetwork network) {
+		this.mappedNetworks.add(network);
+	}
+
+	public Set<CyNetwork> getMappedNetworks() {
+		return this.mappedNetworks;
+	}
+
+	/**
+	 * @return the rowCount
+	 */
+	public Integer getRowCount() {
+		return rowCount;
+	}
+
+	/**
+	 * @param rowCount the rowCount to set
+	 */
+	public void setRowCount(Integer rowCount) {
+		this.rowCount = rowCount;
+		this.commandString = this.commandString + " "+CommandHandler.ARG_ROWS+"=\""+CommandHandler.stringify(rowCount)+"\"";
+	}
 
 }

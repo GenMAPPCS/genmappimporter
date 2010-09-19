@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Reader for Excel attribute workbook.<br>
@@ -41,6 +42,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final HSSFSheet sheet;
 	private final AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
+	
 	private final int startLineNumber;
 	private int globalCounter = 0;
 
@@ -174,4 +176,5 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		// TODO Auto-generated method stub
 		
 	}
+	
 }

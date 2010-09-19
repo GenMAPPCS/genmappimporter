@@ -70,7 +70,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.xml.bind.JAXBException;
 
-import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+import org.genmapp.genmappimport.commands.CommandHandler;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
 import org.jdesktop.layout.GroupLayout;
 
@@ -1101,7 +1101,7 @@ public class ImportTextTableDialog extends JDialog
 
 		// Extract URL from the text table.
 		final URL source = new URL(targetDataSourceTextField.getText());
-		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
+//		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
 		
@@ -1115,11 +1115,11 @@ public class ImportTextTableDialog extends JDialog
 			del = checkDelimiter();
 		}
 
-		GenMAPPImportCyCommandHandler.setImportArgs(source, del, listDelimiter,
+		CommandHandler.setImportArgs(source, del, listDelimiter,
 				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 				importFlags, startLineNumber);
 
-		GenMAPPImportCyCommandHandler.doImport(source, del, listDelimiter,
+		CommandHandler.doImport(source, del, listDelimiter,
 				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
 				importFlags, startLineNumber);
 

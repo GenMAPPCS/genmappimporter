@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
-import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+import org.genmapp.genmappimport.commands.CommandHandler;
 
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
@@ -50,7 +50,7 @@ public class GenMAPPImportPlugin extends CytoscapePlugin {
 		Cytoscape.getDesktop().getCyMenus().addAction(impAttTableAction, 5);
 
 		// CyCommands
-		new GenMAPPImportCyCommandHandler();
+		new CommandHandler();
 		
 	}
 

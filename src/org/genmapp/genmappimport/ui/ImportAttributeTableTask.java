@@ -17,7 +17,7 @@ package org.genmapp.genmappimport.ui;
 
 import java.io.File;
 
-import org.genmapp.genmappimport.commands.GenMAPPImportCyCommandHandler;
+import org.genmapp.genmappimport.commands.CommandHandler;
 import org.genmapp.genmappimport.reader.AttributeLineParser;
 import org.genmapp.genmappimport.reader.TextTableReader;
 
@@ -77,7 +77,7 @@ public class ImportAttributeTableTask implements Task {
 			taskMonitor.setException(e, "Unable to load your data.");
 		}
 		// Create network from all loaded nodes and edges, if toggle
-		if (GenMAPPImportCyCommandHandler.createNetworkToggle) {
+		if (CommandHandler.createNetworkToggle) {
 			File tempFile = new File(source);
 			String t = tempFile.getName();
 			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);

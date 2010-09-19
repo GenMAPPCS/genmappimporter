@@ -26,6 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genmapp.genmappimport.commands.CommandHandler;
+
+import cytoscape.CyNetwork;
+import cytoscape.Cytoscape;
 import cytoscape.command.CyCommandException;
 import cytoscape.command.CyCommandManager;
 import cytoscape.command.CyCommandResult;
@@ -43,7 +47,7 @@ import cytoscape.util.URLUtil;
 public class DefaultAttributeTableReader implements TextTableReader {
 
 	private final URL source;
-	private AttributeMappingParameters mapping;
+	private AttributeMappingParameters amp;
 	private final AttributeLineParser parser;
 
 	// Number of mapped attributes.
@@ -63,7 +67,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	 * 
 	 * @param source
 	 *            Source file URL (can be remote or local file path)
-	 * @param mapping
+	 * @param amp
 	 *            attribute mapping parameter
 	 * @param startLineNumber
 	 *            row to start reading
@@ -71,12 +75,12 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	 *            character to indicate comment row(s) to be skipped
 	 */
 	public DefaultAttributeTableReader(final URL source,
-			AttributeMappingParameters mapping, final int startLineNumber,
+			AttributeMappingParameters amp, final int startLineNumber,
 			final String commentChar) {
 		this.source = source;
-		this.mapping = mapping;
+		this.amp = amp;
 		this.startLineNumber = startLineNumber;
-		this.parser = new AttributeLineParser(mapping);
+		this.parser = new AttributeLineParser(amp);
 		this.commentChar = commentChar;
 
 	}
@@ -89,7 +93,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	public List getColumnNames() {
 		List<String> colNamesList = new ArrayList<String>();
 
-		for (String name : mapping.getAttributeNames()) {
+		for (String name : amp.getAttributeNames()) {
 			colNamesList.add(name);
 		}
 
@@ -107,7 +111,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 		String[] parts = null;
 
-		final String delimiter = mapping.getDelimiterRegEx();
+		final String delimiter = amp.getDelimiterRegEx();
 
 		while ((line = bufRd.readLine()) != null) {
 			/*
@@ -119,7 +123,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 					&& (line.trim().length() > 0)) {
 				parts = line.split(delimiter);
 				// If key does not exists, ignore the line.
-				if (parts.length >= mapping.getKeyIndex() + 1) {
+				if (parts.length >= amp.getKeyIndex() + 1) {
 					try {
 						parser.collectTableIds(parts);
 					} catch (Exception ex) {
@@ -127,7 +131,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 								.println("Couldn't parse row for id mapping: "
 										+ lineCount);
 					}
-					globalCounter++;
 				}
 			}
 
@@ -155,7 +158,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 		String[] parts = null;
 
-		final String delimiter = mapping.getDelimiterRegEx();
+		final String delimiter = amp.getDelimiterRegEx();
 
 		is = URLUtil.getInputStream(source);
 		bufRd = new BufferedReader(new InputStreamReader(is));
@@ -169,7 +172,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 					&& (line.trim().length() > 0)) {
 				parts = line.split(delimiter);
 				// If key does not exists, ignore the line.
-				if (parts.length >= mapping.getKeyIndex() + 1) {
+				if (parts.length >= amp.getKeyIndex() + 1) {
 					try {
 						parser.parseAll(parts);
 					} catch (Exception ex) {
@@ -177,34 +180,54 @@ public class DefaultAttributeTableReader implements TextTableReader {
 								.println("Couldn't parse row for attribute mapping: "
 										+ lineCount);
 					}
-					globalCounter++;
 				}
 			}
 
 			lineCount++;
+			
 		}
+		globalCounter = lineCount;
+		amp.setRowCount(lineCount);
 
 		is.close();
 		bufRd.close();
 		
-		// Add dataset to Workspaces
-		File tempFile = new File(source.toString());
-		String t = tempFile.getName();
-		String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+		// Tag Networks
+		String title = amp.getTitle();
+		String commandString = amp.getCommandString();
 
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("url", source);
-		args.put("displayname", title);
-		args.put("rows", lineCount);
-		try {
-			CyCommandResult result = CyCommandManager.execute("workspaces", "add dataset", args);
-		} catch (CyCommandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for (CyNetwork network : amp.getMappedNetworks()){
+			String netid = network.getIdentifier();
+			List<String> sourcelist = new ArrayList<String>();
+			if (Cytoscape.getNetworkAttributes().hasAttribute(netid, "org.genmapp.datasets_1.0")){
+				sourcelist = (List<String>) Cytoscape.getNetworkAttributes().getListAttribute(netid, "org.genmapp.datasets_1.0");
+				if (!sourcelist.contains(title)){
+					sourcelist.add(title);
+					Cytoscape.getNetworkAttributes().setListAttribute(netid, "org.genmapp.datasets_1.0", sourcelist);
+				}
+			} else {
+				sourcelist.add(title);
+				Cytoscape.getNetworkAttributes().setListAttribute(netid, "org.genmapp.datasets_1.0", sourcelist);	
+			}
+			Cytoscape.getNetworkAttributes().setAttribute(netid, "org.genmapp.dataset."+ title, commandString);
 		}
+		
+		// Add dataset to Workspaces
+		CommandHandler.updateWorkspaces(title, commandString);
+
+//		Map<String, Object> args = new HashMap<String, Object>();
+//		args.put("url", source);
+//		args.put("displayname", title);
+//		args.put("rows", lineCount);
+//		try {
+//			CyCommandResult result = CyCommandManager.execute("workspaces", "add dataset", args);
+//		} catch (CyCommandException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (RuntimeException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -241,5 +264,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	public int[] getNodeIndexList() {
 		return parser.getNodeIndexList();
 	}
+
 
 }
