@@ -1115,9 +1115,9 @@ public class ImportTextTableDialog extends JDialog
 			del = checkDelimiter();
 		}
 
-		CommandHandler.setImportArgs(source, del, listDelimiter,
-				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
-				importFlags, startLineNumber);
+//		CommandHandler.setImportArgs(source, del, listDelimiter,
+//				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
+//				importFlags, startLineNumber);
 
 		CommandHandler.doImport(source, del, listDelimiter,
 				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,

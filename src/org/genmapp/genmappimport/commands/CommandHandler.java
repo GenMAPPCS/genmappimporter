@@ -53,9 +53,9 @@ public class CommandHandler extends AbstractCommandHandler {
 	public final static String CREATE_NETWORK = "create network";
 	public final static String ARG_CREATE_NETWORK = "toggle";
 
-	public final static String GET_SOURCE = "get source";
-
-	public final static String GET_IMPORTED = "get imported";
+	// public final static String GET_SOURCE = "get source";
+	//
+	// public final static String GET_IMPORTED = "get imported";
 
 	public final static String IMPORT = "import";
 	public final static String ARG_SOURCE = "source";
@@ -77,7 +77,7 @@ public class CommandHandler extends AbstractCommandHandler {
 	public static boolean createNetworkToggle = false;
 
 	// master Map'o'Map to store all import args keyed by source url
-	public static Map<URL, Map<String, Object>> importArgsMap = new HashMap<URL, Map<String, Object>>();
+//	public static Map<URL, Map<String, Object>> importArgsMap = new HashMap<URL, Map<String, Object>>();
 
 	public CommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
@@ -86,8 +86,8 @@ public class CommandHandler extends AbstractCommandHandler {
 				"Set toggle to create network and view from imported table data");
 		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
 
-		addDescription(GET_IMPORTED, "get parameters for last imported table");
-		addArgument(GET_IMPORTED, ARG_SOURCE);
+//		addDescription(GET_IMPORTED, "get parameters for last imported table");
+//		addArgument(GET_IMPORTED, ARG_SOURCE);
 
 		// addDescription(REIMPORT_DATASET,
 		// "perform re-import of existing source");
@@ -155,61 +155,61 @@ public class CommandHandler extends AbstractCommandHandler {
 			// e.printStackTrace();
 			// }
 
-		} else if (GET_IMPORTED.equals(command)) {
-			URL source = null;
-			Object obj = args.get(ARG_SOURCE);
-			if (obj instanceof URL) {
-				source = (URL) obj;
-			} else if (obj instanceof String) {
-				try {
-					source = new URL((String) obj);
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else
-				throw new CyCommandException(
-						"source object type not recognized, try URL or String.");
-
-			Map<String, Object> importArgs = importArgsMap.get(source);
-			for (String t : importArgs.keySet()) {
-				Object o = importArgs.get(t);
-				result.addResult(t, o);
-
-				// produce nice string for message
-				String s = "[";
-				if (null == o) {
-					s = "null";
-				} else if (o instanceof String[]) {
-					String[] so = (String[]) o;
-					for (String st : so) {
-						s += st + ",";
-					}
-				} else if (o instanceof Byte[]) {
-					Byte[] bo = (Byte[]) o;
-					for (Byte b : bo) {
-						if (null == b) {
-							s += "null,";
-						} else {
-							s += b.toString() + ",";
-						}
-					}
-				} else if (o instanceof boolean[]) {
-					boolean[] bo = (boolean[]) o;
-					for (boolean b : bo) {
-						Boolean bb = ((Boolean) b);
-						s += bb.toString() + ",";
-					}
-				} else {
-					s = o.toString();
-				}
-				// finish off list strings
-				if (s.startsWith("[")) {
-					s = s.substring(0, s.length() - 1);
-					s += "]";
-				}
-				result.addMessage("Arg: " + t + " = " + s);
-			}
+//		} else if (GET_IMPORTED.equals(command)) {
+//			URL source = null;
+//			Object obj = args.get(ARG_SOURCE);
+//			if (obj instanceof URL) {
+//				source = (URL) obj;
+//			} else if (obj instanceof String) {
+//				try {
+//					source = new URL((String) obj);
+//				} catch (MalformedURLException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			} else
+//				throw new CyCommandException(
+//						"source object type not recognized, try URL or String.");
+//
+//			Map<String, Object> importArgs = importArgsMap.get(source);
+//			for (String t : importArgs.keySet()) {
+//				Object o = importArgs.get(t);
+//				result.addResult(t, o);
+//
+//				// produce nice string for message
+//				String s = "[";
+//				if (null == o) {
+//					s = "null";
+//				} else if (o instanceof String[]) {
+//					String[] so = (String[]) o;
+//					for (String st : so) {
+//						s += st + ",";
+//					}
+//				} else if (o instanceof Byte[]) {
+//					Byte[] bo = (Byte[]) o;
+//					for (Byte b : bo) {
+//						if (null == b) {
+//							s += "null,";
+//						} else {
+//							s += b.toString() + ",";
+//						}
+//					}
+//				} else if (o instanceof boolean[]) {
+//					boolean[] bo = (boolean[]) o;
+//					for (boolean b : bo) {
+//						Boolean bb = ((Boolean) b);
+//						s += bb.toString() + ",";
+//					}
+//				} else {
+//					s = o.toString();
+//				}
+//				// finish off list strings
+//				if (s.startsWith("[")) {
+//					s = s.substring(0, s.length() - 1);
+//					s += "]";
+//				}
+//				result.addMessage("Arg: " + t + " = " + s);
+//			}
 
 		} else if (IMPORT.equals(command)) {
 			URL source = null;
@@ -373,8 +373,8 @@ public class CommandHandler extends AbstractCommandHandler {
 			}
 
 			try {
-				setImportArgs(source, del, listDel, key, keyType, secKeyType,
-						attrNames, attrTypes, listTypes, flags, startLine);
+//				setImportArgs(source, del, listDel, key, keyType, secKeyType,
+//						attrNames, attrTypes, listTypes, flags, startLine);
 				doImport(source, del, listDel, key, keyType, secKeyType,
 						attrNames, attrTypes, listTypes, flags, startLine);
 			} catch (Exception e) {
@@ -401,27 +401,27 @@ public class CommandHandler extends AbstractCommandHandler {
 	 * @param flags
 	 * @param startLine
 	 */
-	public static void setImportArgs(URL source, List<String> del,
-			String listDel, int key, String keyType, String secondaryKeyType,
-			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
-			boolean[] flags, int startLine) {
-
-		Map<String, Object> importArgs = new HashMap<String, Object>();
-
-		importArgs.put(ARG_SOURCE, source);
-		importArgs.put(ARG_DELS, del);
-		importArgs.put(ARG_LIST_DEL, listDel);
-		importArgs.put(ARG_KEY, (Integer) key);
-		importArgs.put(ARG_KEY_TYPE, keyType);
-		importArgs.put(ARG_SEC_KEY_TYPE, secondaryKeyType);
-		importArgs.put(ARG_ATTR_NAMES, attrNames);
-		importArgs.put(ARG_ATTR_TYPES, attrTypes);
-		importArgs.put(ARG_LIST_TYPES, listTypes);
-		importArgs.put(ARG_FLAGS, flags);
-		importArgs.put(ARG_START_LINE, (Integer) startLine);
-
-		importArgsMap.put(source, importArgs);
-	}
+//	public static void setImportArgs(URL source, List<String> del,
+//			String listDel, int key, String keyType, String secondaryKeyType,
+//			String[] attrNames, Byte[] attrTypes, Byte[] listTypes,
+//			boolean[] flags, int startLine) {
+//
+//		Map<String, Object> importArgs = new HashMap<String, Object>();
+//
+//		importArgs.put(ARG_SOURCE, source);
+//		importArgs.put(ARG_DELS, del);
+//		importArgs.put(ARG_LIST_DEL, listDel);
+//		importArgs.put(ARG_KEY, (Integer) key);
+//		importArgs.put(ARG_KEY_TYPE, keyType);
+//		importArgs.put(ARG_SEC_KEY_TYPE, secondaryKeyType);
+//		importArgs.put(ARG_ATTR_NAMES, attrNames);
+//		importArgs.put(ARG_ATTR_TYPES, attrTypes);
+//		importArgs.put(ARG_LIST_TYPES, listTypes);
+//		importArgs.put(ARG_FLAGS, flags);
+//		importArgs.put(ARG_START_LINE, (Integer) startLine);
+//
+//		importArgsMap.put(source, importArgs);
+//	}
 
 	/**
 	 * Isolated Import step to be called indirectly by CyCommands as well as by
