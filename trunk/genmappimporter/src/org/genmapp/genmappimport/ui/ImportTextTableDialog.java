@@ -873,8 +873,8 @@ public class ImportTextTableDialog extends JDialog
 		}
 
 		for (int i = 0; i < primaryTypeComboBox.getItemCount(); i++) {
-//			System.out.println("i: " + i + ":"
-//					+ primaryTypeComboBox.getItemAt(i) + "=" + firstType);
+			// System.out.println("i: " + i + ":"
+			// + primaryTypeComboBox.getItemAt(i) + "=" + firstType);
 			if (primaryTypeComboBox.getItemAt(i).equals(firstType)) {
 				primaryTypeComboBox.setSelectedIndex(i);
 			}
@@ -909,9 +909,10 @@ public class ImportTextTableDialog extends JDialog
 	 */
 	private void primaryTypeComboBoxActionPerformed(ActionEvent evt) {
 		// Update primary type index.
-		keyType = (String) primaryTypeComboBox.getItemAt(primaryTypeComboBox.getSelectedIndex());
-		
-		//TODO: identify secondary key type for mapping
+		keyType = (String) primaryTypeComboBox.getItemAt(primaryTypeComboBox
+				.getSelectedIndex());
+
+		// TODO: identify secondary key type for mapping
 		Map<String, Object> noargs = new HashMap<String, Object>();
 		CyCommandResult result = null;
 		try {
@@ -1101,12 +1102,14 @@ public class ImportTextTableDialog extends JDialog
 
 		// Extract URL from the text table.
 		final URL source = new URL(targetDataSourceTextField.getText());
-//		GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
+		// GenMAPPImportCyCommandHandler.importSourceUrl = source.toString();
 		// Make sure primary key index is up-to-date.
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
-		
-		//REDUNDANT
-		//keyType = (String) primaryTypeComboBox.getItemAt(primaryTypeComboBox.getSelectedIndex());
+
+		// REDUNDANT
+		// keyType = (String)
+		// primaryTypeComboBox.getItemAt(primaryTypeComboBox.getSelectedIndex
+		// ());
 
 		List<String> del = new ArrayList<String>();
 		if (previewPanel.isCytoscapeAttributeFile(source)) {
@@ -1115,13 +1118,14 @@ public class ImportTextTableDialog extends JDialog
 			del = checkDelimiter();
 		}
 
-//		CommandHandler.setImportArgs(source, del, listDelimiter,
-//				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
-//				importFlags, startLineNumber);
+		// CommandHandler.setImportArgs(source, del, listDelimiter,
+		// keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes,
+		// listDataTypes,
+		// importFlags, startLineNumber);
 
-		DatasetCommandHandler.doImport(source, del, listDelimiter,
-				keyInFile, keyType, secondaryKeyType, attributeNames, attributeTypes, listDataTypes,
-				importFlags, startLineNumber);
+		DatasetCommandHandler.doImport(source, del, listDelimiter, keyInFile,
+				keyType, secondaryKeyType, attributeNames, attributeTypes,
+				listDataTypes, importFlags, startLineNumber);
 
 		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
 
@@ -1327,37 +1331,9 @@ public class ImportTextTableDialog extends JDialog
 	 * 
 	 */
 	public void initializePrimaryTypeComboBox() {
-		// Register resources with CyThesaurus
-		// NOW DONE BY CYTHESAURUS DIRECTLY
-//		String species = CytoscapeInit.getProperties().getProperty(
-//				"defaultSpeciesName");
-//		Map<String, Object> args = new HashMap<String, Object>();
-//		args.put("classpath", "org.bridgedb.webservice.bridgerest.BridgeRest");
-//		args
-//				.put("connstring",
-//						"idmapper-bridgerest:http://webservice.bridgedb.org/"
-//								+ species);
-//		args.put("displayname", "BridgeDb (http://webservice.bridgedb.org/"
-//				+ species + ")");
-//		try {
-//			CyCommandResult result = CyCommandManager.execute("idmapping",
-//					"register resource", args);
-//			for (String re : result.getMessages())
-//				System.out.println(re);
-//			args.clear();
-		Map<String, Object> args = new HashMap<String, Object>();
-		try {
-			CyCommandResult result = CyCommandManager.execute("idmapping", "list resources",
-					args);
-			for (String re : result.getMessages())
-				System.out.println(re);
-		} catch (CyCommandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// TODO: speed this up by collecting them when resources are first
+		// registered by workspaces and access them from there. Or by doing this
+		// asynchronously
 
 		Map<String, Object> noargs = new HashMap<String, Object>();
 		CyCommandResult result = null;
