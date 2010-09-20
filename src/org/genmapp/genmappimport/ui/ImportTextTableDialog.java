@@ -65,6 +65,7 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -343,8 +344,18 @@ public class ImportTextTableDialog extends JDialog
 			}
 		});
 
-		// initialize via CyThesaurus
-		initializePrimaryTypeComboBox();
+		/*
+		 * Start thread to initialize via CyThesaurus.
+		 */
+		SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+
+			public String doInBackground() {
+				String msg = "done!";
+				initializePrimaryTypeComboBox();
+				return msg;
+			}
+		};
+		worker.execute();
 
 		/*
 		 * Set tooltips options.
