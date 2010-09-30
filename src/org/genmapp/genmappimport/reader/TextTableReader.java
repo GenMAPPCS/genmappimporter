@@ -27,10 +27,6 @@ import java.util.List;
  */
 public interface TextTableReader {
 
-	/**
-	 * @throws IOException
-	 */
-	public void firstRead() throws IOException;
 
 	/**
 	 * @throws IOException
@@ -48,9 +44,4 @@ public interface TextTableReader {
 	 */
 	public String getReport();
 	
-	/**
-	 * Make list of nodes from parser available
-	 * @return
-	 */
-	public int[] getNodeIndexList();
 }

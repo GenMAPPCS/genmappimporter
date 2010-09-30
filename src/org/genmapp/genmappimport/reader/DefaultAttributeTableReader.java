@@ -102,57 +102,42 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		return colNamesList;
 	}
 
-	/**
-	 * Read table from the data source, first for identifier mapping.
-	 */
-	public void firstRead() throws IOException {
-		InputStream is = URLUtil.getInputStream(source);
-		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
-		String line;
-		int lineCount = 0;
-
-		String[] parts = null;
-
-		final String delimiter = amp.getDelimiterRegEx();
-
-		while ((line = bufRd.readLine()) != null) {
-			/*
-			 * Ignore Empty & Comment lines.
-			 */
-			if ((commentChar != null) && line.startsWith(commentChar)) {
-				// Do nothing
-			} else if ((lineCount >= startLineNumber)
-					&& (line.trim().length() > 0)) {
-				parts = line.split(delimiter);
-				// If key does not exists, ignore the line.
-				if (parts.length >= amp.getKeyIndex() + 1) {
-					try {
-						parser.collectTableIds(parts);
-					} catch (Exception ex) {
-						System.out
-								.println("Couldn't parse row for id mapping: "
-										+ lineCount);
-					}
-				}
-			}
-
-			lineCount++;
-		}
-		is.close();
-		bufRd.close();
-		
-		// perform actual id mapping (can be slow via web services)
-		parser.collectTableMappings();
-		
-		//perform network id mappings (can be slow via web services)
-		parser.performNetworkMappings();
-	}
-		
 
 	/**
 	 * Read table from the data source, this time for attribute mapping.
 	 */
 	public void readTable() throws IOException {
+
+		// collect list of virgin networks
+		List<CyNetwork> netList = new ArrayList<CyNetwork>();
+		for (CyNetwork network : Cytoscape.getNetworkSet()) {
+			String netid = network.getIdentifier();
+			System.out.println(netid);
+			if (Cytoscape.viewExists(netid)) {
+				// check network-level system code
+				String networkCode = Cytoscape.getNetworkAttributes()
+						.getStringAttribute(netid, AttributeLineParser.CODE);
+				if (networkCode == AttributeLineParser.DATASET) {
+					// skip this network; it's another dataset!
+					continue;
+				}
+				// check network attributes for dataset tag
+				String title = amp.getTitle();
+				if (Cytoscape.getNetworkAttributes().hasAttribute(netid,
+						NET_ATTR_DATASETS)) {
+					List<String> sourcelist = (List<String>) Cytoscape
+							.getNetworkAttributes().getListAttribute(netid,
+									NET_ATTR_DATASETS);
+					if (!sourcelist.contains(title)) {
+						System.out.println("2 "+netid);
+						netList.add(network);
+					}
+				} else {
+					netList.add(network);
+				}
+			}
+		}
+
 		InputStream is = URLUtil.getInputStream(source);
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
 		String line;
@@ -176,7 +161,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 				// If key does not exists, ignore the line.
 				if (parts.length >= amp.getKeyIndex() + 1) {
 					try {
-						parser.parseAll(parts);
+						parser.parseAll(parts, netList);
 					} catch (Exception ex) {
 						System.out
 								.println("Couldn't parse row for attribute mapping: "
@@ -186,50 +171,22 @@ public class DefaultAttributeTableReader implements TextTableReader {
 			}
 
 			lineCount++;
-			
+
 		}
 		globalCounter = lineCount;
 		amp.setRowCount(lineCount);
 
 		is.close();
 		bufRd.close();
-		
-		// Tag Networks
-		String title = amp.getTitle();
-		String commandString = amp.getCommandString();
 
-		for (CyNetwork network : amp.getMappedNetworks()){
-			String netid = network.getIdentifier();
-			List<String> sourcelist = new ArrayList<String>();
-			if (Cytoscape.getNetworkAttributes().hasAttribute(netid, NET_ATTR_DATASETS)){
-				sourcelist = (List<String>) Cytoscape.getNetworkAttributes().getListAttribute(netid, NET_ATTR_DATASETS);
-				if (!sourcelist.contains(title)){
-					sourcelist.add(title);
-					Cytoscape.getNetworkAttributes().setListAttribute(netid, NET_ATTR_DATASETS, sourcelist);
-				}
-			} else {
-				sourcelist.add(title);
-				Cytoscape.getNetworkAttributes().setListAttribute(netid, NET_ATTR_DATASETS, sourcelist);	
-			}
-			Cytoscape.getNetworkAttributes().setAttribute(netid, NET_ATTR_DATASET_PREFIX + title, commandString);
-		}
-		
-		// Add dataset to Workspaces
-		DatasetCommandHandler.updateWorkspaces(title, commandString);
 
-//		Map<String, Object> args = new HashMap<String, Object>();
-//		args.put("url", source);
-//		args.put("displayname", title);
-//		args.put("rows", lineCount);
-//		try {
-//			CyCommandResult result = CyCommandManager.execute("workspaces", "add dataset", args);
-//		} catch (CyCommandException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (RuntimeException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+
+		// Ship to Workspaces for CyDataset creation and mapping
+		List<String> attrs = new ArrayList<String>();
+		for (String a : amp.getAttributeNames())
+			attrs.add(a);
+		DatasetCommandHandler.updateWorkspaces2(amp.getTitle(), amp.getKeyType(), parser.getNodeIndexList(), attrs);
+
 	}
 
 	/**
@@ -257,15 +214,5 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		}
 		return sb.toString();
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.genmapp.genmappimport.reader.TextTableReader#getNodeList()
-	 */
-	public int[] getNodeIndexList() {
-		return parser.getNodeIndexList();
-	}
-
 
 }
