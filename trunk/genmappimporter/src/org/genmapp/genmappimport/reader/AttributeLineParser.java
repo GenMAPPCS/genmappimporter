@@ -66,7 +66,7 @@ public class AttributeLineParser {
 	 *            fields in a row
 	 */
 	@SuppressWarnings("unchecked")
-	public void parseAll(String[] parts, List<CyNetwork> networkList) {
+	public void parseAll(String[] parts) {
 		// Get key
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
 
