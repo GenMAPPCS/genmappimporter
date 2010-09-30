@@ -52,18 +52,6 @@ public class ImportAttributeTableTask implements Task {
 	 * Executes Task.
 	 */
 	public void run() {
-		taskMonitor.setStatus("Interpreting identifiers...");
-		taskMonitor.setPercentCompleted(-1);
-
-		try {
-			reader.firstRead();
-			taskMonitor.setPercentCompleted(100);
-		} catch (Exception e) {
-			e.printStackTrace();
-			taskMonitor
-					.setException(e, "Unable to work with your identifiers.");
-		}
-
 		// Perform
 		taskMonitor.setStatus("Loading data...");
 		taskMonitor.setPercentCompleted(-1);
@@ -78,14 +66,14 @@ public class ImportAttributeTableTask implements Task {
 		}
 		// Create network from all loaded nodes and edges, if toggle
 		if (DatasetCommandHandler.createNetworkToggle) {
-			File tempFile = new File(source);
-			String t = tempFile.getName();
-			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
-			CyNetwork network = Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape
-					.getRootGraph().getEdgeIndicesArray(), title);
-			Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
-			Cytoscape.getNetworkAttributes().setAttribute(network.getIdentifier(),
-					AttributeLineParser.CODE, AttributeLineParser.DATASET);
+//			File tempFile = new File(source);
+//			String t = tempFile.getName();
+//			String title = CyNetworkNaming.getSuggestedNetworkTitle(t);
+//			CyNetwork network = Cytoscape.createNetwork(reader.getNodeIndexList(), Cytoscape
+//					.getRootGraph().getEdgeIndicesArray(), title);
+//			Cytoscape.firePropertyChange(Cytoscape.NETWORK_LOADED, null, title);
+//			Cytoscape.getNetworkAttributes().setAttribute(network.getIdentifier(),
+//					AttributeLineParser.CODE, AttributeLineParser.DATASET);
 		}
 
 		informUserOfAnnotationStats();

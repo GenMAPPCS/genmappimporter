@@ -345,17 +345,35 @@ public class ImportTextTableDialog extends JDialog
 		});
 
 		/*
-		 * Start thread to initialize via CyThesaurus.
+		 * Start thread to "listen" for registration of default resources by
+		 * CyThesaurus. Usually takes just over a second so we sleep for bit
+		 * before trying.
 		 */
 		SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
 
 			public String doInBackground() {
 				String msg = "done!";
+				int resourcesCount = 0;
+				int attempts = 0;
+				while (resourcesCount == 0) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					resourcesCount = listResources();
+					if (attempts++ == 5) {
+						//give up!
+						resourcesCount = -1;
+					}
+				}
+				// now you can initialize the combobox
 				initializePrimaryTypeComboBox();
 				return msg;
 			}
 		};
 		worker.execute();
+
 
 		/*
 		 * Set tooltips options.
@@ -857,6 +875,27 @@ public class ImportTextTableDialog extends JDialog
 
 		pack();
 	} // </editor-fold>
+	
+	/**
+	 * @return
+	 */
+	private Integer listResources() {
+		int count = 0;
+		Map<String, Object> args = new HashMap<String, Object>();
+		try {
+			CyCommandResult result = CyCommandManager.execute("idmapping",
+					"list selected resources", args);
+			Set<String> mappers = (Set<String>) result.getResult();
+			count = mappers.size();
+		} catch (CyCommandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return count;
+	}
 
 	/**
 	 * Update UI based on the primary key selection.
@@ -1337,6 +1376,8 @@ public class ImportTextTableDialog extends JDialog
 		}
 
 	}
+	
+	
 
 	/**
 	 * 

@@ -15,19 +15,17 @@
  ******************************************************************************/
 package org.genmapp.genmappimport.reader;
 
-import cytoscape.data.CyAttributes;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 
-import giny.model.Node;
-
-import java.io.IOException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import cytoscape.CyNetwork;
+import cytoscape.data.CyAttributes;
 
 /**
  * Reader for Excel attribute workbook.<br>
@@ -78,6 +76,10 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 *             DOCUMENT ME!
 	 */
 	public void readTable() throws IOException {
+		
+		//TODO: collect list of networks
+		List<CyNetwork> netList = new ArrayList<CyNetwork>();
+		
 		HSSFRow row;
 		int rowCount = startLineNumber;
 		String[] cellsInOneRow;
@@ -85,7 +87,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		while ((row = sheet.getRow(rowCount)) != null) {
 			cellsInOneRow = createElementStringArray(row);
 			try {
-				parser.parseAll(cellsInOneRow);
+				parser.parseAll(cellsInOneRow, netList);
 			} catch (Exception ex) {
 				System.out.println("Couldn't parse row: " + rowCount);
 				ex.printStackTrace();
@@ -161,20 +163,6 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		}
 
 		return sb.toString();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.genmapp.genmappimport.reader.TextTableReader#getNodeList()
-	 */
-	public int[] getNodeIndexList() {
-		return parser.getNodeIndexList();
-	}
-
-	public void firstRead() throws IOException {
-		// TODO Auto-generated method stub
-		
 	}
 	
 }

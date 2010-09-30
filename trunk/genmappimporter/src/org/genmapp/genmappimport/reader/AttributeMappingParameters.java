@@ -30,6 +30,7 @@ import java.util.Set;
 import org.genmapp.genmappimport.commands.DatasetCommandHandler;
 
 import cytoscape.CyNetwork;
+import cytoscape.CyNode;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
 import cytoscape.util.CyNetworkNaming;
@@ -49,6 +50,7 @@ public class AttributeMappingParameters {
 	private final String keyType;
 	private String secondaryKeyType;
 	private String[] attributeNames;
+
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
 	private List<String> delimiters;
@@ -60,6 +62,9 @@ public class AttributeMappingParameters {
 	private Set<CyNetwork> mappedNetworks = new HashSet<CyNetwork>();;
 	private String commandString;
 	private Integer rowCount;
+	
+	//TODO: handle as node indexes?
+	//public List<CyNode> datasetNodes = new ArrayList<CyNode>();
 
 	/**
 	 * Creates a new AttributeMappingParameters object.
@@ -233,6 +238,20 @@ public class AttributeMappingParameters {
 		// TODO Auto-generated method stub
 		return attributeNames;
 	}
+
+//	/**
+//	 * @return the datasetNodes
+//	 */
+//	public List<CyNode> getDatasetNodes() {
+//		return datasetNodes;
+//	}
+//
+//	/**
+//	 * @param datasetNodes the datasetNodes to set
+//	 */
+//	public void setDatasetNodes(List<CyNode> datasetNodes) {
+//		this.datasetNodes = datasetNodes;
+//	}
 
 	/**
 	 * DOCUMENT ME!

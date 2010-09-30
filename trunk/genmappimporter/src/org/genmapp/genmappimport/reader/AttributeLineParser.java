@@ -43,15 +43,10 @@ public class AttributeLineParser {
 	private AttributeMappingParameters amp;
 	private Map<String, Object> invalid = new HashMap<String, Object>();
 	private List<Integer> nodeList = new ArrayList<Integer>();
-	private List<String> keyList = new ArrayList<String>();
-	private Map<String, Set<String>> primaryMap = new HashMap<String, Set<String>>();
-	// private Map<String, Set<String>> secondaryMap = new HashMap<String,
-	// Set<String>>();
 
-	public static final String ID = "GeneID";
 	public static final String CODE = "SystemCode";
 	public static final String DATASET = "DATASET";
-	public static final String MIXED = "MIXED";
+
 
 	/**
 	 * Creates a new AttributeLineParser object.
@@ -63,250 +58,6 @@ public class AttributeLineParser {
 		this.amp = amp;
 	}
 
-	/**
-	 * @param parts
-	 */
-	public void collectTableIds(String[] parts) {
-		final String primaryKey = parts[amp.getKeyIndex()].trim();
-		keyList.add(primaryKey);
-	}
-
-	/**
-	 * @param parts
-	 */
-	public void performNetworkMappings() {
-
-		Map<String, List<String>> typeKeysMap = new HashMap<String, List<String>>();
-		Map<String, List<String>> keyNodesMap = new HashMap<String, List<String>>();
-
-		// get all networks with views (ignore others)
-		for (CyNetwork network : Cytoscape.getNetworkSet()) {
-			if (Cytoscape.viewExists(network.getIdentifier())) {
-				// check network-level system code
-				String networkCode = Cytoscape.getNetworkAttributes()
-						.getStringAttribute(network.getIdentifier(), CODE);
-				if (networkCode != null) {
-					// skip this network; it's already been id mapped
-					continue;
-				}
-				// determine if there *is* a network-level system code
-				// collect first 10 nodes
-				List<String> keyList = new ArrayList<String>();
-				int j = 10;
-				if (network.nodesList().size() < 10)
-					j = network.nodesList().size();
-				for (int i = 0; i < j; i++) {
-					keyList.add(((CyNode) network.nodesList().get(i))
-							.getIdentifier());
-				}
-				Map<String, Object> args = new HashMap<String, Object>();
-				args.put("sourceid", keyList);
-				try {
-					CyCommandResult result = CyCommandManager.execute(
-							"idmapping", "guess id type", args);
-					if (null != result) {
-						// we only trust unique hits
-						if (((Set<String>) result.getResult()).size() == 1) {
-							String type = null;
-							for (String t : (Set<String>) result.getResult()) {
-								type = t;
-							}
-							Cytoscape.getNetworkAttributes().setAttribute(
-									network.getIdentifier(), CODE, type);
-							// skip special cases, which will be mapped
-							// naturally
-							if (!type.equals(amp.getSecKeyType())
-									&& !type.equals(amp.getKeyType())) {
-								CyCommandResult result2 = mapIdentifiersByAttr(
-										network, type);
-							}
-							continue; // continue to next network
-						}
-					}
-				} catch (CyCommandException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (RuntimeException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				// check node-level system codes
-				for (CyNode cn : (List<CyNode>) network.nodesList()) {
-					List<String> sk = (List<String>) Cytoscape
-							.getNodeAttributes().getListAttribute(
-									cn.getIdentifier(),
-									"__" + amp.getSecKeyType());
-					if (sk != null)
-						if (sk.size() > 0) {
-							continue; // next node
-						}
-					String pk = Cytoscape.getNodeAttributes()
-							.getStringAttribute(cn.getIdentifier(), ID);
-					String pkt = Cytoscape.getNodeAttributes()
-							.getStringAttribute(cn.getIdentifier(), CODE);
-					if (pk != null && pkt != null) {
-						List<String> keys = typeKeysMap.get(pkt);
-						if (null == keys) {
-							keys = new ArrayList<String>();
-						}
-						keys.add(pk);
-						typeKeysMap.put(pkt, keys);
-						List<String> nodes = keyNodesMap.get(pk);
-						if (null == nodes) {
-							nodes = new ArrayList<String>();
-						}
-						nodes.add(cn.getIdentifier());
-						keyNodesMap.put(pk, nodes);
-
-						Cytoscape.getNetworkAttributes().setAttribute(
-								network.getIdentifier(), CODE, MIXED);
-
-					} else {
-						// screw it! They need to try harder!
-					}
-				}
-
-			}
-		}
-
-		// Finally, take collection of nodes to be mapped and map them
-		for (String type : typeKeysMap.keySet()) {
-
-			// first check if mapping is supported
-			boolean greenLight = checkMappingSupported(type, amp
-					.getSecKeyType());
-
-			if (greenLight) {
-				CyCommandResult result = mapIdentifiers(typeKeysMap.get(type),
-						type);
-
-				if (null != result) {
-					Map<String, Set<String>> keyMappings = (Map<String, Set<String>>) result
-							.getResult();
-					for (String pkey : keyMappings.keySet()) {
-						List<String> slist = new ArrayList<String>();
-						for (String skey : keyMappings.get(pkey)) {
-							slist.add(skey);
-						}
-
-						for (String node : keyNodesMap.get(pkey)) {
-							try {
-								amp.getAttributes().setListAttribute(node,
-										"__" + amp.getSecKeyType(), slist);
-							} catch (Exception e) {
-								invalid.put(pkey, slist);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	/**
-	 * 
-	 */
-	public void collectTableMappings() {
-		final String primaryKeyType = amp.getKeyType();
-		if (primaryKeyType.equals(amp.getSecKeyType()))
-			return; // don't bother
-
-		CyCommandResult result = mapIdentifiers(keyList, primaryKeyType);
-
-		if (null != result) {
-			Map<String, Set<String>> keyMappings = (Map<String, Set<String>>) result
-					.getResult();
-			for (String primaryKey : keyMappings.keySet()) {
-				primaryMap.put(primaryKey, keyMappings.get(primaryKey));
-				// for (String secondaryKey : keyMappings.get(primaryKey)) {
-				// Set<String> tempSet = new HashSet<String>();
-				// tempSet = secondaryMap.get(secondaryKey);
-				// if (null == tempSet)
-				// tempSet = new HashSet<String>();
-				// tempSet.add(primaryKey);
-				// secondaryMap.put(secondaryKey, tempSet);
-				// }
-			}
-		}
-	}
-
-	private Boolean checkMappingSupported(String st, String tt) {
-
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("sourcetype", st);
-		args.put("targettype", tt);
-		try {
-			CyCommandResult result = CyCommandManager.execute("idmapping",
-					"check mapping supported", args);
-			if (null != result) {
-				Boolean b = (Boolean) result.getResult();
-				return b;
-			} else {
-				return false;
-			}
-		} catch (CyCommandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// if all else fails
-		return false;
-	}
-
-	private CyCommandResult mapIdentifiers(List<String> l, String pkt) {
-		final String skt = amp.getSecKeyType();
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("sourceid", l);
-		args.put("sourcetype", pkt);
-		args.put("targettype", skt);
-		CyCommandResult result = null;
-		try {
-			result = CyCommandManager.execute("idmapping", "general mapping",
-					args);
-		} catch (CyCommandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		for (String msg : result.getMessages()) {
-			// System.out.println(msg);
-		}
-		return result;
-	}
-
-	private CyCommandResult mapIdentifiersByAttr(CyNetwork net, String pkt) {
-		final String skt = amp.getSecKeyType();
-
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("networklist", net);
-		args.put("sourceattr", "ID");
-		args.put("sourcetype", pkt);
-		args.put("targetattr", "__" + skt);
-		args.put("targettype", skt);
-		CyCommandResult result = null;
-		try {
-			result = CyCommandManager.execute("idmapping",
-					"attribute based mapping", args);
-		} catch (CyCommandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		for (String msg : result.getMessages()) {
-			// System.out.println(msg);
-		}
-		return result;
-	}
 
 	/**
 	 * Import everything regardless associated nodes/edges exist or not.
@@ -315,117 +66,27 @@ public class AttributeLineParser {
 	 *            fields in a row
 	 */
 	@SuppressWarnings("unchecked")
-	public void parseAll(String[] parts) {
+	public void parseAll(String[] parts, List<CyNetwork> networkList) {
 		// Get key
 		final String primaryKey = parts[amp.getKeyIndex()].trim();
-		Set<String> secKeys = primaryMap.get(primaryKey);
 
-		// collect existing primary and secondary key nodes
-		Node n = Cytoscape.getCyNode(primaryKey, false);
-		List<Node> snlist = new ArrayList<Node>();
-		if (secKeys != null) {
-			for (String secondaryKey : secKeys) {
-				Node sn = Cytoscape.getCyNode(secondaryKey, false);
-				if (null != sn) {
-					snlist.add(sn);
-				}
-			}
-		}
-		
-		/*
-		 * Perform mapping on a per network basis to track associations with
-		 * datasets
-		 */
-		for (CyNetwork network : Cytoscape.getNetworkSet()) {
-			if (Cytoscape.viewExists(network.getIdentifier())) {
-				// check network-level system code
-				String networkCode = Cytoscape.getNetworkAttributes()
-						.getStringAttribute(network.getIdentifier(), CODE);
-				if (networkCode == DATASET) {
-					// skip this network; it's another dataset!
-					continue;
-				}
-				for (CyNode cn : (List<CyNode>) network.nodesList()) {
-					boolean didMap = false;
-					/*
-					 * First, check against primary key nodes
-					 */
-					if (null != n) {
-						if (n == cn) {
-							mapAttributes(amp.getKeyIndex(),
-									cn.getIdentifier(), parts);
-							amp.addMappedNetwork(network);
-						}
-					}
-					/*
-					 * Then against secondary keys
-					 */
-					if (snlist.size() > 0) {
-						if (snlist.contains(cn)) {
-							mapAttributes(-1, cn.getIdentifier(), parts);
-							amp.addMappedNetwork(network);
-						}
-					}
-					/*
-					 * Then, we check secondary keys in secondary column (e.g.,
-					 * "__Ensembl Yeast") per network with view
-					 */
-					List<String> sk = (List<String>) Cytoscape
-							.getNodeAttributes().getListAttribute(
-									cn.getIdentifier(),
-									"__" + amp.getSecKeyType());
-					if (sk != null) {
-						if (sk.size() > 0) {
-							for (String secondaryKey : secKeys) {
-								if (sk.contains(secondaryKey)) {
-									didMap = mapAttributes(-1, cn
-											.getIdentifier(), parts);
-									amp.addMappedNetwork(network);
-									break; // skip remaining secKeys
-								}
-							}
-							if (didMap)
-								continue; // next node
-						}
-					}
-					/*
-					 * Then check if primaryKey matches ID/CODE directly
-					 */
-					String pk = Cytoscape.getNodeAttributes()
-							.getStringAttribute(cn.getIdentifier(), ID);
-					String pkt = Cytoscape.getNodeAttributes()
-							.getStringAttribute(cn.getIdentifier(), CODE);
-					if (pk != null && pkt != null) {
-						if (pkt.equals(amp.getKeyType())
-								&& pk.equals(primaryKey)) {
-							mapAttributes(amp.getKeyIndex(),
-									cn.getIdentifier(), parts);
-							amp.addMappedNetwork(network);
+		// create nodes every time
+		CyNode n = Cytoscape.getCyNode(primaryKey, true);
+		nodeList.add(n.getRootGraphIndex());
 
-						}
-					}
-				}
+		// then, map attributes from file to datanodes
+		mapAttributes(amp.getKeyIndex(), n.getIdentifier(), parts);
 
-			}
-		}
-
-		/*
-		 * Finally, we create nodes if a new network is requested
-		 */
-		if (DatasetCommandHandler.createNetworkToggle) {
-			n = Cytoscape.getCyNode(primaryKey, true);
-			buildNodeList(n.getRootGraphIndex());
-			mapAttributes(amp.getKeyIndex(), primaryKey, parts);
-		}
-	}
 	
+	}
+
 	/**
 	 * @param skipIndex
 	 * @param nkey
 	 * @param parts
 	 * @return
 	 */
-	private boolean mapAttributes(int skipIndex, String nkey, String[] parts) {
+	private void mapAttributes(int skipIndex, String nkey, String[] parts) {
 
 		final int partsLen = parts.length;
 		// map attributes
@@ -438,40 +99,8 @@ public class AttributeLineParser {
 				}
 			}
 		}
-		// add primary key as new attribute
-		String pkey = parts[amp.getKeyIndex()].trim();
-		String ptype = amp.getKeyType();
-		List<String> plist = (List<String>) Cytoscape.getNodeAttributes()
-				.getListAttribute(nkey, "__" + ptype);
-		if (null == plist) {
-			plist = new ArrayList<String>();
-		}
-		if (!plist.contains(pkey)) {
-			plist.add(pkey);
-		}
-		try {
-			amp.getAttributes().setListAttribute(nkey, "__" + ptype, plist);
-		} catch (Exception e) {
-			invalid.put(nkey, plist);
-		}
-
-		// add secondary key as new attribute
-		// only applies to special cases where mapping has been skipped
-		if (pkey.equals(nkey) || primaryMap.get(pkey).contains(nkey)) {
-			String stype = amp.getSecKeyType();
-			List<String> slist = new ArrayList<String>();
-			for (String skey : primaryMap.get(pkey)) {
-				slist.add(skey);
-			}
-			try {
-				amp.getAttributes().setListAttribute(nkey, "__" + stype, slist);
-			} catch (Exception e) {
-				invalid.put(nkey, slist);
-			}
-		}
-		return true;
 	}
-	
+
 	/**
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 * 
@@ -485,10 +114,7 @@ public class AttributeLineParser {
 	private void mapAttribute(final String key, final String entry,
 			final int index) {
 		final Byte type = amp.getAttributeTypes()[index];
-
-		// System.out.println("Index = "+ amp.getAttributeNames()[index] +", "+
-		// key +" = "+ entry);
-
+		
 		switch (type) {
 			case CyAttributes.TYPE_BOOLEAN :
 
@@ -590,26 +216,14 @@ public class AttributeLineParser {
 		return invalid;
 	}
 
-	/**
-	 * Compile a list of nodes from data file
-	 * 
-	 * @param n
-	 */
-	private void buildNodeList(final int n) {
-		nodeList.add(n);
-	}
 
 	/**
 	 * Get list of nodes
 	 * 
 	 * @return
 	 */
-	public int[] getNodeIndexList() {
-		int[] nodeIndexList = new int[nodeList.size()];
-		for (int i = 0; i < nodeList.size(); i++) {
-			nodeIndexList[i] = nodeList.get(i);
-		}
-		return nodeIndexList;
+	public List<Integer> getNodeIndexList() {
+		return nodeList;
 	}
 
 	/**
