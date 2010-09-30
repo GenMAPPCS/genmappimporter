@@ -77,9 +77,6 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 */
 	public void readTable() throws IOException {
 		
-		//TODO: collect list of networks
-		List<CyNetwork> netList = new ArrayList<CyNetwork>();
-		
 		HSSFRow row;
 		int rowCount = startLineNumber;
 		String[] cellsInOneRow;
@@ -87,7 +84,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		while ((row = sheet.getRow(rowCount)) != null) {
 			cellsInOneRow = createElementStringArray(row);
 			try {
-				parser.parseAll(cellsInOneRow, netList);
+				parser.parseAll(cellsInOneRow);
 			} catch (Exception ex) {
 				System.out.println("Couldn't parse row: " + rowCount);
 				ex.printStackTrace();

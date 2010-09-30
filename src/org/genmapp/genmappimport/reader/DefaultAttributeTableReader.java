@@ -108,36 +108,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	 */
 	public void readTable() throws IOException {
 
-		// collect list of virgin networks
-		List<CyNetwork> netList = new ArrayList<CyNetwork>();
-		for (CyNetwork network : Cytoscape.getNetworkSet()) {
-			String netid = network.getIdentifier();
-			System.out.println(netid);
-			if (Cytoscape.viewExists(netid)) {
-				// check network-level system code
-				String networkCode = Cytoscape.getNetworkAttributes()
-						.getStringAttribute(netid, AttributeLineParser.CODE);
-				if (networkCode == AttributeLineParser.DATASET) {
-					// skip this network; it's another dataset!
-					continue;
-				}
-				// check network attributes for dataset tag
-				String title = amp.getTitle();
-				if (Cytoscape.getNetworkAttributes().hasAttribute(netid,
-						NET_ATTR_DATASETS)) {
-					List<String> sourcelist = (List<String>) Cytoscape
-							.getNetworkAttributes().getListAttribute(netid,
-									NET_ATTR_DATASETS);
-					if (!sourcelist.contains(title)) {
-						System.out.println("2 "+netid);
-						netList.add(network);
-					}
-				} else {
-					netList.add(network);
-				}
-			}
-		}
-
 		InputStream is = URLUtil.getInputStream(source);
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
 		String line;
@@ -161,7 +131,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 				// If key does not exists, ignore the line.
 				if (parts.length >= amp.getKeyIndex() + 1) {
 					try {
-						parser.parseAll(parts, netList);
+						parser.parseAll(parts);
 					} catch (Exception ex) {
 						System.out
 								.println("Couldn't parse row for attribute mapping: "
