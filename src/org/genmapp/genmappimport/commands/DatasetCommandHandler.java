@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.genmapp.genmappimport.commands;
+package org.genmapp.tableimporter.commands;
 
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
@@ -27,15 +27,14 @@ import java.util.Map;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
-import org.genmapp.genmappimport.reader.AttributeMappingParameters;
-import org.genmapp.genmappimport.reader.DefaultAttributeTableReader;
-import org.genmapp.genmappimport.reader.ExcelAttributeSheetReader;
-import org.genmapp.genmappimport.reader.TextTableReader;
-import org.genmapp.genmappimport.ui.ImportAttributeTableTask;
-import org.genmapp.genmappimport.ui.ImportTextTableDialog;
+import org.genmapp.tableimporter.actions.ImportAttributeTableAction;
+import org.genmapp.tableimporter.reader.AttributeMappingParameters;
+import org.genmapp.tableimporter.reader.DefaultAttributeTableReader;
+import org.genmapp.tableimporter.reader.ExcelAttributeSheetReader;
+import org.genmapp.tableimporter.reader.TextTableReader;
+import org.genmapp.tableimporter.ui.ImportAttributeTableTask;
+import org.genmapp.tableimporter.ui.ImportTextTableDialog;
 
-import cytoscape.CyNode;
 import cytoscape.Cytoscape;
 import cytoscape.command.AbstractCommandHandler;
 import cytoscape.command.CyCommandException;
@@ -88,8 +87,7 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 	public DatasetCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
 
-		addDescription(OPEN_DIALOG,
-				"Open main dialog");
+		addDescription(OPEN_DIALOG, "Open main dialog");
 		addArgument(OPEN_DIALOG);
 
 		addDescription(CREATE_NETWORK,
@@ -126,7 +124,8 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 		}
 		if (OPEN_DIALOG.equals(command)) {
 			ImportAttributeTableAction iata = new ImportAttributeTableAction();
-			iata.actionPerformed(new ActionEvent(iata, ActionEvent.ACTION_PERFORMED, command) );
+			iata.actionPerformed(new ActionEvent(iata,
+					ActionEvent.ACTION_PERFORMED, command));
 		} else if (CREATE_NETWORK.equals(command)) {
 			boolean val = Boolean.parseBoolean((String) args
 					.get(ARG_CREATE_NETWORK));
@@ -380,32 +379,13 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 	}
 
 	/**
-	 * Tell Workspaces to update dataset info
+	 * Send new dataset over to Workspaces for registration and mapping
 	 * 
 	 * @param title
 	 */
-//	public static void updateWorkspaces(String title, String com) {
-//		Map<String, Object> args = new HashMap<String, Object>();
-//		args.put("name", title);
-//		args.put("command", com);
-//		try {
-//			CyCommandManager.execute("workspaces", "update datasets", args);
-//		} catch (CyCommandException cce) {
-//			// TODO Auto-generated catch block
-//			cce.printStackTrace();
-//		} catch (RuntimeException cce) {
-//			// TODO Auto-generated catch block
-//			cce.printStackTrace();
-//		}
-//	}
-	
-	/**
-	 * Tell Workspaces to update dataset info
-	 * 
-	 * @param title
-	 */
-	public static void updateWorkspaces2(String name, String type, List<Integer> nodes, List<String> attrs ) {
-		final String UPDATE_DATASETS2 = "update datasets2";
+	public static void updateWorkspaces2(String name, String type,
+			List<Integer> nodes, List<String> attrs) {
+		final String UPDATE_DATASETS = "update datasets";
 		final String ARG_DATASET_NAME = "name";
 		final String ARG_DATASET_TYPE = "type";
 		final String ARG_DATASET_NODES = "nodes";
@@ -416,7 +396,7 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 		args.put(ARG_DATASET_NODES, nodes);
 		args.put(ARG_DATASET_ATTRS, attrs);
 		try {
-			CyCommandManager.execute("workspaces", UPDATE_DATASETS2, args);
+			CyCommandManager.execute("workspaces", UPDATE_DATASETS, args);
 		} catch (CyCommandException cce) {
 			// TODO Auto-generated catch block
 			cce.printStackTrace();
@@ -425,8 +405,6 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 			cce.printStackTrace();
 		}
 	}
-
-
 
 	/**
 	 * This little ditty takes the variety of objects associated with the import
