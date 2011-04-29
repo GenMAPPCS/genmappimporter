@@ -1173,13 +1173,13 @@ public class ImportTextTableDialog extends JDialog
 		// listDataTypes,
 		// importFlags, startLineNumber);
 
+		dispose();
+		
 		DatasetCommandHandler.doImport(source, del, listDelimiter, keyInFile,
 				keyType, secondaryKeyType, attributeNames, attributeTypes,
 				listDataTypes, importFlags, startLineNumber);
 
 		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
-
-		dispose();
 	}
 
 	private void selectAttributeFileButtonActionPerformed(ActionEvent evt)

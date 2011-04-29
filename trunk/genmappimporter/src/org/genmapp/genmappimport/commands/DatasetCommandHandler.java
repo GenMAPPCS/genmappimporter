@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.genmapp.tableimporter.commands;
+package org.genmapp.genmappimport.commands;
 
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
@@ -27,13 +27,13 @@ import java.util.Map;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.genmapp.tableimporter.actions.ImportAttributeTableAction;
-import org.genmapp.tableimporter.reader.AttributeMappingParameters;
-import org.genmapp.tableimporter.reader.DefaultAttributeTableReader;
-import org.genmapp.tableimporter.reader.ExcelAttributeSheetReader;
-import org.genmapp.tableimporter.reader.TextTableReader;
-import org.genmapp.tableimporter.ui.ImportAttributeTableTask;
-import org.genmapp.tableimporter.ui.ImportTextTableDialog;
+import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
+import org.genmapp.genmappimport.reader.AttributeMappingParameters;
+import org.genmapp.genmappimport.reader.DefaultAttributeTableReader;
+import org.genmapp.genmappimport.reader.ExcelAttributeSheetReader;
+import org.genmapp.genmappimport.reader.TextTableReader;
+import org.genmapp.genmappimport.ui.ImportAttributeTableTask;
+import org.genmapp.genmappimport.ui.ImportTextTableDialog;
 
 import cytoscape.Cytoscape;
 import cytoscape.command.AbstractCommandHandler;
