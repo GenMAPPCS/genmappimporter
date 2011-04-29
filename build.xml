@@ -21,10 +21,9 @@
 		<property name="plugin.root.dir" value="." />
 
 		<!-- You need to modify this line to point to Cytoscape directory.  -->
-		<property name="cytoscape.dir" value="${plugin.root.dir}/../cytoscape2.6" />
+		<property name="cytoscape.dir" value="/Applications/Cytoscape_v2.8.1" />
 
-		<property name="cytoscape.lib.dir" value="${cytoscape.dir}/lib" />
-		<property name="cytoscape.plugin.dir" value="${cytoscape.dir}/plugins/core" />
+		<property name="cytoscape.plugin.dir" value="${cytoscape.dir}/plugins" />
 		<property name="cytoscape.build.dir" value="${cytoscape.dir}/build" />
 
 		<!-- JUnit report directory -->
@@ -62,12 +61,6 @@
 				<include name="*.jar" />
 			</fileset>
 			<fileset dir="${cytoscape.dir}">
-				<include name="*.jar" />
-			</fileset>
-			<fileset dir="${cytoscape.lib.dir}">
-				<include name="*.jar" />
-			</fileset>
-			<fileset dir="${cytoscape.lib.dir}/build-libs">
 				<include name="*.jar" />
 			</fileset>
 		</path>
@@ -118,7 +111,6 @@
 		</jar>
 		
   		<copy file="${plugin.build.dir}/${plugin.name}.jar" todir="${cytoscape.plugin.dir}"/>
-		<copy file="${plugin.build.dir}/${plugin.name}.jar" todir="/Applications/Cytoscape_v2.6.3/plugins"/>
 
 	</target>
 
