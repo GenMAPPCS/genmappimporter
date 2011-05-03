@@ -718,6 +718,9 @@ public class ImportTextTableDialog extends JDialog
 												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 												24,
 												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+										.addPreferredGap(
+												org.jdesktop.layout.LayoutStyle.RELATED)
+										.add(reloadButton)
 										.addContainerGap(
 												GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)));
@@ -738,11 +741,11 @@ public class ImportTextTableDialog extends JDialog
 														.add(startRowSpinner,
 																21, 21, 21)
 														.add(commentLineLabel)
-														.add(
-																commentLineTextField,
+														.add(commentLineTextField,
 																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 																org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+														.add(reloadButton))
 										.addContainerGap(
 												GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)));
@@ -775,9 +778,7 @@ public class ImportTextTableDialog extends JDialog
 												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(reloadButton).addContainerGap()));
+										.addContainerGap()));
 		textImportOptionPanelLayout
 				.setVerticalGroup(textImportOptionPanelLayout
 						.createParallelGroup(
@@ -793,10 +794,7 @@ public class ImportTextTableDialog extends JDialog
 																delimiterPanel,
 																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 																49,
-																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-														.add(
-																org.jdesktop.layout.GroupLayout.TRAILING,
-																reloadButton))
+																org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
 										.addPreferredGap(
 												org.jdesktop.layout.LayoutStyle.RELATED)
 										.add(
