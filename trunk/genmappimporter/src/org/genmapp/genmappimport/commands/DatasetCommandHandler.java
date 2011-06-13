@@ -86,9 +86,9 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 
 	public DatasetCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
-//
-//		addDescription(OPEN_DIALOG, "Open main dialog");
-//		addArgument(OPEN_DIALOG);
+
+		addDescription(OPEN_DIALOG, "Open main dialog");
+		addArgument(OPEN_DIALOG);
 //
 //		addDescription(CREATE_NETWORK,
 //				"Set toggle to create network and view from imported table data");
