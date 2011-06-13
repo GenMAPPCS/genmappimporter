@@ -99,11 +99,12 @@
 <!--		<copy todir="${plugin.classes.dir}/org/genmapp/jar" 
 			file="${plugin.manifest.dir}/plugin.props"/>
 -->
-		<unjar dest="${plugin.classes.dir}">
+<!--		<unjar dest="${plugin.classes.dir}">
 			<fileset dir="${plugin.lib.dir}">
 				<include name="*.jar" />
 			</fileset>
 		</unjar>
+-->
 	
 		<jar destfile="${plugin.build.dir}/${plugin.name}.jar" >
 			<fileset dir="${plugin.classes.dir}" includes="**" />
@@ -112,15 +113,6 @@
 		
   		<copy file="${plugin.build.dir}/${plugin.name}.jar" todir="${cytoscape.plugin.dir}"/>
 
-	</target>
-
-
-	<!-- =================================================================== -->
-	<!-- Run the Plugin                                                      -->
-	<!-- =================================================================== -->
-	<target name="run" depends="jar">
-		<java classname="cytoscape.cytoscape" classpathref="plugin.project.class.path" fork="true" />
-		<arg line="-p ${plugin.lib.dir}/${plugin.name}.jar" />
 	</target>
 
 
