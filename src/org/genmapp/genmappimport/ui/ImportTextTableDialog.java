@@ -72,11 +72,11 @@ import javax.swing.table.TableCellRenderer;
 import javax.xml.bind.JAXBException;
 
 import org.genmapp.genmappimport.commands.DatasetCommandHandler;
+import org.genmapp.genmappimport.reader.SupportedFileType;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
 import org.jdesktop.layout.GroupLayout;
 
 import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
 import cytoscape.command.CyCommandException;
 import cytoscape.command.CyCommandManager;
 import cytoscape.command.CyCommandResult;
@@ -128,8 +128,6 @@ public class ImportTextTableDialog extends JDialog
 			"Column (Attribute Name)", "Data Type"};
 
 	private static final String ID = "ID";
-
-	public static final String EXCEL_EXT = ".xls";
 
 	// Key column index
 	private int keyInFile;
@@ -1538,7 +1536,10 @@ public class ImportTextTableDialog extends JDialog
 		 * If this is not an Excel file, enable delimiter checkboxes.
 		 */
 		// FileTypes type = checkFileType(sourceURL);
-		if (sourceURL.toString().endsWith(EXCEL_EXT) == false) {
+		if (sourceURL.toString().endsWith(SupportedFileType.EXCEL.getExtension()) || 
+				sourceURL.toString().endsWith(SupportedFileType.OOXML.getExtension())) {
+			switchDelimiterCheckBoxes(false);
+		} else {
 			switchDelimiterCheckBoxes(true);
 		}
 

@@ -142,7 +142,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 		}
 		globalCounter = lineCount;
-		amp.setRowCount(lineCount);
+//		amp.setRowCount(lineCount);
 
 		is.close();
 		bufRd.close();

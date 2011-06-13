@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Arrays;
@@ -60,11 +61,13 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.genmapp.genmappimport.reader.SupportedFileType;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
 import org.genmapp.genmappimport.ui.ImportTextTableDialog.FileTypes;
 import org.jdesktop.layout.GroupLayout;
@@ -93,7 +96,6 @@ public class PreviewTablePanel extends JPanel {
 	 */
 	private static final String DEF_MESSAGE = "Legend:";
 	private static final String DEF_TAB_MESSAGE = "Data File Preview Window";
-	private static final String EXCEL_EXT = ".xls";
 
 	// Lines start with this char will be ignored.
 	private String commentChar;
@@ -568,24 +570,35 @@ public class PreviewTablePanel extends JPanel {
 
 		fileTypeLabel.setVisible(true);
 
-		if (sourceURL.toString().endsWith(EXCEL_EXT)) {
+		if (sourceURL.toString().endsWith(SupportedFileType.EXCEL.getExtension())
+				|| sourceURL.toString().endsWith(
+						SupportedFileType.OOXML.getExtension())) {
 			fileTypeLabel.setIcon(SPREADSHEET_ICON.getIcon());
 			fileTypeLabel.setText("Excel" + '\u2122' + " Workbook");
 
-			POIFSFileSystem excelIn = new POIFSFileSystem(sourceURL
-					.openStream());
-			HSSFWorkbook wb = new HSSFWorkbook(excelIn, true);
+			InputStream is = null;
+			final Workbook wb;
 
-			if (wb.getNumberOfSheets() == 0) {
-				return;
+			try {
+				is = sourceURL.openStream();
+				wb = WorkbookFactory.create(is);
+			} catch (InvalidFormatException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
+			} finally {
+				if (is != null)
+					is.close();
 			}
+
+			if (wb.getNumberOfSheets() == 0)
+				throw new IllegalStateException("No sheet found in the workbook.");
 
 			/*
 			 * Load each sheet in the workbook.
 			 */
 			System.out.println("# of Sheets = " + wb.getNumberOfSheets());
 
-			HSSFSheet sheet = wb.getSheetAt(0);
+			Sheet sheet = wb.getSheetAt(0);
 			System.out.println("Sheet name = " + wb.getSheetName(0)
 					+ ", ROW = " + sheet.rowIterator().hasNext());
 
@@ -840,13 +853,13 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	private TableModel parseExcel(URL sourceURL, int size,
-			TableCellRenderer renderer, HSSFSheet sheet, int startLine)
+			TableCellRenderer renderer, Sheet sheet, int startLine)
 			throws IOException {
 		int maxCol = 0;
 		Vector data = new Vector();
 
 		int rowCount = 0;
-		HSSFRow row;
+		Row row;
 
 		while (((row = sheet.getRow(rowCount)) != null) && (rowCount < size)) {
 			if (rowCount >= startLine) {
@@ -857,14 +870,14 @@ public class PreviewTablePanel extends JPanel {
 				}
 
 				for (short j = 0; j < maxCol; j++) {
-					HSSFCell cell = row.getCell(j);
+					Cell cell = row.getCell(j);
 
 					if (cell == null) {
 						rowVector.add(null);
-					} else if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
+					} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
 						rowVector
 								.add(cell.getRichStringCellValue().getString());
-					} else if (cell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
+					} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 						final Double dblValue = cell.getNumericCellValue();
 						final Integer intValue = dblValue.intValue();
 
@@ -873,11 +886,11 @@ public class PreviewTablePanel extends JPanel {
 						} else {
 							rowVector.add(dblValue.toString());
 						}
-					} else if (cell.getCellType() == HSSFCell.CELL_TYPE_BOOLEAN) {
+					} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
 						rowVector.add(Boolean.toString(cell
 								.getBooleanCellValue()));
-					} else if ((cell.getCellType() == HSSFCell.CELL_TYPE_BLANK)
-							|| (cell.getCellType() == HSSFCell.CELL_TYPE_ERROR)) {
+					} else if ((cell.getCellType() == Cell.CELL_TYPE_BLANK)
+							|| (cell.getCellType() == Cell.CELL_TYPE_ERROR)) {
 						rowVector.add(null);
 					} else {
 						rowVector.add(null);
