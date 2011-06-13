@@ -86,27 +86,27 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 
 	public DatasetCommandHandler() {
 		super(CyCommandManager.reserveNamespace(NAMESPACE));
-
-		addDescription(OPEN_DIALOG, "Open main dialog");
-		addArgument(OPEN_DIALOG);
-
-		addDescription(CREATE_NETWORK,
-				"Set toggle to create network and view from imported table data");
-		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
-
-		addDescription(IMPORT, "perform new table import");
-		addArgument(IMPORT, ARG_SOURCE);
-		addArgument(IMPORT, ARG_DELS);
-		addArgument(IMPORT, ARG_LIST_DEL);
-		addArgument(IMPORT, ARG_KEY);
-		addArgument(IMPORT, ARG_KEY_TYPE);
-		addArgument(IMPORT, ARG_SEC_KEY_TYPE);
-		addArgument(IMPORT, ARG_ATTR_NAMES);
-		addArgument(IMPORT, ARG_ATTR_TYPES);
-		addArgument(IMPORT, ARG_LIST_TYPES);
-		addArgument(IMPORT, ARG_FLAGS);
-		addArgument(IMPORT, ARG_START_LINE);
-		addArgument(IMPORT, ARG_ROWS);
+//
+//		addDescription(OPEN_DIALOG, "Open main dialog");
+//		addArgument(OPEN_DIALOG);
+//
+//		addDescription(CREATE_NETWORK,
+//				"Set toggle to create network and view from imported table data");
+//		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
+//
+//		addDescription(IMPORT, "perform new table import");
+//		addArgument(IMPORT, ARG_SOURCE);
+//		addArgument(IMPORT, ARG_DELS);
+//		addArgument(IMPORT, ARG_LIST_DEL);
+//		addArgument(IMPORT, ARG_KEY);
+//		addArgument(IMPORT, ARG_KEY_TYPE);
+//		addArgument(IMPORT, ARG_SEC_KEY_TYPE);
+//		addArgument(IMPORT, ARG_ATTR_NAMES);
+//		addArgument(IMPORT, ARG_ATTR_TYPES);
+//		addArgument(IMPORT, ARG_LIST_TYPES);
+//		addArgument(IMPORT, ARG_FLAGS);
+//		addArgument(IMPORT, ARG_START_LINE);
+//		addArgument(IMPORT, ARG_ROWS);
 
 	}
 
