@@ -49,8 +49,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	private final URL source;
 	private AttributeMappingParameters amp;
 	private final AttributeLineParser parser;
-	private final String NET_ATTR_DATASETS = "org.genmapp.datasets_1.0";
-	private final String NET_ATTR_DATASET_PREFIX = "org.genmapp.dataset.";
 
 	// Number of mapped attributes.
 	private int globalCounter = 0;
