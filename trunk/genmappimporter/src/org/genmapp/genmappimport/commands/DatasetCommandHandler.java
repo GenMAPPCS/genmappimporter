@@ -16,6 +16,7 @@
 package org.genmapp.genmappimport.commands;
 
 import java.awt.event.ActionEvent;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,13 +25,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.genmapp.genmappimport.actions.ImportAttributeTableAction;
 import org.genmapp.genmappimport.reader.AttributeMappingParameters;
 import org.genmapp.genmappimport.reader.DefaultAttributeTableReader;
 import org.genmapp.genmappimport.reader.ExcelAttributeSheetReader;
+import org.genmapp.genmappimport.reader.SupportedFileType;
 import org.genmapp.genmappimport.reader.TextTableReader;
 import org.genmapp.genmappimport.ui.ImportAttributeTableTask;
 import org.genmapp.genmappimport.ui.ImportTextTableDialog;
@@ -89,24 +93,24 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 
 		addDescription(OPEN_DIALOG, "Open main dialog");
 		addArgument(OPEN_DIALOG);
-//
-//		addDescription(CREATE_NETWORK,
-//				"Set toggle to create network and view from imported table data");
-//		addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
-//
-//		addDescription(IMPORT, "perform new table import");
-//		addArgument(IMPORT, ARG_SOURCE);
-//		addArgument(IMPORT, ARG_DELS);
-//		addArgument(IMPORT, ARG_LIST_DEL);
-//		addArgument(IMPORT, ARG_KEY);
-//		addArgument(IMPORT, ARG_KEY_TYPE);
-//		addArgument(IMPORT, ARG_SEC_KEY_TYPE);
-//		addArgument(IMPORT, ARG_ATTR_NAMES);
-//		addArgument(IMPORT, ARG_ATTR_TYPES);
-//		addArgument(IMPORT, ARG_LIST_TYPES);
-//		addArgument(IMPORT, ARG_FLAGS);
-//		addArgument(IMPORT, ARG_START_LINE);
-//		addArgument(IMPORT, ARG_ROWS);
+		//
+		// addDescription(CREATE_NETWORK,
+		// "Set toggle to create network and view from imported table data");
+		// addArgument(CREATE_NETWORK, ARG_CREATE_NETWORK);
+		//
+		// addDescription(IMPORT, "perform new table import");
+		// addArgument(IMPORT, ARG_SOURCE);
+		// addArgument(IMPORT, ARG_DELS);
+		// addArgument(IMPORT, ARG_LIST_DEL);
+		// addArgument(IMPORT, ARG_KEY);
+		// addArgument(IMPORT, ARG_KEY_TYPE);
+		// addArgument(IMPORT, ARG_SEC_KEY_TYPE);
+		// addArgument(IMPORT, ARG_ATTR_NAMES);
+		// addArgument(IMPORT, ARG_ATTR_TYPES);
+		// addArgument(IMPORT, ARG_LIST_TYPES);
+		// addArgument(IMPORT, ARG_FLAGS);
+		// addArgument(IMPORT, ARG_START_LINE);
+		// addArgument(IMPORT, ARG_ROWS);
 
 	}
 
@@ -336,21 +340,38 @@ public class DatasetCommandHandler extends AbstractCommandHandler {
 				keyType, secKeyType, attrNames, attrTypes, listTypes, flags,
 				startLine);
 
-		if (source.toString().endsWith(ImportTextTableDialog.EXCEL_EXT)) {
-			/*
-			 * Read one sheet at a time
-			 */
-			POIFSFileSystem excelIn = new POIFSFileSystem(source.openStream());
-			HSSFWorkbook wb = new HSSFWorkbook(excelIn);
+		if (source.toString().endsWith(SupportedFileType.EXCEL.getExtension())
+				|| source.toString().endsWith(
+						SupportedFileType.OOXML.getExtension())) {
+			InputStream is = null;
+			final Workbook wb;
 
-			// Load all sheets in the table
-			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-				HSSFSheet sheet = wb.getSheetAt(i);
-
-				loadAnnotation(new ExcelAttributeSheetReader(sheet, mapping,
-						startLine), source.toString());
-
+			try {
+				is = source.openStream();
+				wb = WorkbookFactory.create(is);
+			} catch (InvalidFormatException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException(
+						"Could not read Excel file.  Maybe the file is broken?");
+			} finally {
+				if (is != null)
+					is.close();
 			}
+
+			if (wb.getNumberOfSheets() == 0)
+				throw new IllegalStateException(
+						"No sheet found in the workbook.");
+
+			/*
+			 * Load each sheet in the workbook.
+			 */
+			System.out.println("# of Sheets = " + wb.getNumberOfSheets());
+
+			Sheet sheet = wb.getSheetAt(0);
+
+			loadAnnotation(new ExcelAttributeSheetReader(sheet, mapping,
+					startLine), source.toString());
+
 		} else {
 			loadAnnotation(new DefaultAttributeTableReader(source, mapping,
 					startLine, null), source.toString());

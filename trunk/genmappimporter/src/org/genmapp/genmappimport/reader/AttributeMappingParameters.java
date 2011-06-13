@@ -390,19 +390,19 @@ public class AttributeMappingParameters {
 		return this.mappedNetworks;
 	}
 
-	/**
-	 * @return the rowCount
-	 */
-	public Integer getRowCount() {
-		return rowCount;
-	}
-
-	/**
-	 * @param rowCount the rowCount to set
-	 */
-	public void setRowCount(Integer rowCount) {
-		this.rowCount = rowCount;
-		this.commandString = this.commandString + " "+DatasetCommandHandler.ARG_ROWS+"=\""+DatasetCommandHandler.stringify(rowCount)+"\"";
-	}
+//	/**
+//	 * @return the rowCount
+//	 */
+//	public Integer getRowCount() {
+//		return rowCount;
+//	}
+//
+//	/**
+//	 * @param rowCount the rowCount to set
+//	 */
+//	public void setRowCount(Integer rowCount) {
+//		this.rowCount = rowCount;
+//		this.commandString = this.commandString + " "+DatasetCommandHandler.ARG_ROWS+"=\""+DatasetCommandHandler.stringify(rowCount)+"\"";
+//	}
 
 }
