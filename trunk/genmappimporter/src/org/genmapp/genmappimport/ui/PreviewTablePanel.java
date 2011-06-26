@@ -67,6 +67,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.genmapp.genmappimport.GenMAPPImportPlugin;
 import org.genmapp.genmappimport.reader.SupportedFileType;
 import org.genmapp.genmappimport.reader.TextFileDelimiters;
 import org.genmapp.genmappimport.ui.ImportTextTableDialog.FileTypes;
@@ -263,8 +264,8 @@ public class PreviewTablePanel extends JPanel {
 		final BufferedImage datasourceImage = getBufferedImage(Cytoscape.class
 				.getResource("images/ximian/data_sources_trans.png"));
 
-		final BufferedImage bi = getBufferedImage(Cytoscape.class
-				.getResource("images/icon100_trans.png"));
+		final BufferedImage bi = getBufferedImage(GenMAPPImportPlugin.class
+				.getResource("../../../images/icon100_trans.png"));
 
 		tableTabbedPane.setBackground(Color.white);
 		tableTabbedPane
@@ -578,7 +579,7 @@ public class PreviewTablePanel extends JPanel {
 
 			InputStream is = null;
 			final Workbook wb;
-
+			
 			try {
 				is = sourceURL.openStream();
 				wb = WorkbookFactory.create(is);
@@ -618,8 +619,8 @@ public class PreviewTablePanel extends JPanel {
 		} else {
 			if (isCytoscapeAttributeFile(sourceURL)) {
 				fileTypeLabel.setText("Cytoscape Attribute File");
-				fileTypeLabel.setIcon(new ImageIcon(Cytoscape.class
-						.getResource("images/icon48.png")));
+				fileTypeLabel.setIcon(new ImageIcon(GenMAPPImportPlugin.class
+						.getResource("../../../images/icon48.png")));
 				newModel = parseText(sourceURL, size, curRenderer, null, 1);
 			} else {
 				fileTypeLabel.setText("Text File");
