@@ -105,7 +105,7 @@
 			</fileset>
 		</unjar>
 -->
-        <copy file="plugin.props" todir="${build.classes}/org/genmapp/genmappimport/"/>
+        <copy file="plugin.props" todir="${plugin.classes.dir}/org/genmapp/genmappimport/"/>
         	
 		<jar destfile="${plugin.build.dir}/${plugin.name}.jar" >
 			<fileset dir="${plugin.classes.dir}" includes="**" />
