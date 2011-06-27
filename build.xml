@@ -21,7 +21,7 @@
 		<property name="plugin.root.dir" value="." />
 
 		<!-- You need to modify this line to point to Cytoscape directory.  -->
-		<property name="cytoscape.dir" value="/Applications/Cytoscape_v2.8.1" />
+		<property name="cytoscape.dir" value="/Applications/Cytoscape_v2.8.2" />
 
 		<property name="cytoscape.plugin.dir" value="${cytoscape.dir}/plugins" />
 		<property name="cytoscape.build.dir" value="${cytoscape.dir}/build" />
@@ -105,7 +105,8 @@
 			</fileset>
 		</unjar>
 -->
-	
+        <copy file="plugin.props" todir="${build.classes}/org/genmapp/genmappimport/"/>
+        	
 		<jar destfile="${plugin.build.dir}/${plugin.name}.jar" >
 			<fileset dir="${plugin.classes.dir}" includes="**" />
 			<fileset dir="${plugin.root.dir}/lib" includes="resources/**" /> 
